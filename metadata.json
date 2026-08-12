@@ -1,0 +1,6 @@
+{
+  "name": "Felipe Garagem Tattoo",
+  "description": "Site de portfólio e orçamentos para o tatuador Felipe Garagem.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
