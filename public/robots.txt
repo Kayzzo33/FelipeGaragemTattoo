@@ -1,0 +1,5 @@
+# robots.txt for Felipe Garagem Tattoo
+User-agent: *
+Allow: /
+
+Sitemap: https://felipegaragemtattoo.com.br/sitemap.xml

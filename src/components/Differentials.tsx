@@ -21,7 +21,7 @@ export function Differentials() {
   ];
 
   return (
-    <section className="py-24 md:py-40 bg-black px-6 md:px-12 max-w-7xl mx-auto flex flex-col gap-32 md:gap-48 overflow-hidden">
+    <section id="differentials" className="py-24 md:py-40 bg-black px-6 md:px-12 max-w-7xl mx-auto flex flex-col gap-32 md:gap-48 overflow-hidden">
       {blocks.map((block, i) => {
         const isEven = i % 2 === 0;
         return (

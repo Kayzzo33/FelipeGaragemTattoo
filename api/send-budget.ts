@@ -1,6 +1,3 @@
-import express from 'express';
-import path from 'path';
-import { createServer as createViteServer } from 'vite';
 import { Resend } from 'resend';
 
 function escapeHtml(text?: string | null): string {
@@ -13,51 +10,41 @@ function escapeHtml(text?: string | null): string {
     .replace(/'/g, '&#039;');
 }
 
-async function startServer() {
-  const app = express();
-  const PORT = 3000;
+export default async function handler(req: any, res: any) {
+  // Only allow POST
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-  // Increase payload limit to support base64 fallback attachments
-  app.use(express.json({ limit: '25mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '25mb' }));
+  try {
+    const resendKey = process.env.RESEND_API_KEY;
+    const toEmail = process.env.RESEND_TO_EMAIL || process.env.TATTOO_ARTIST_EMAIL;
 
-  // API routes FIRST
-  app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok' });
-  });
+    const data = req.body || {};
 
-  app.post('/api/send-budget', async (req, res) => {
-    try {
-      const resendKey = process.env.RESEND_API_KEY;
-      const toEmail = process.env.RESEND_TO_EMAIL || process.env.TATTOO_ARTIST_EMAIL;
+    const safeData = {
+      nome: escapeHtml(data.nome),
+      instagram: escapeHtml(data.instagram),
+      whatsapp: escapeHtml(data.whatsapp),
+      ideia: escapeHtml(data.ideia),
+      local: escapeHtml(data.local),
+      localOutro: escapeHtml(data.localOutro),
+      lado: escapeHtml(data.lado),
+      tamanho: escapeHtml(data.tamanho),
+      condicaoPele: escapeHtml(data.condicaoPele),
+      condicaoPeleOutro: escapeHtml(data.condicaoPeleOutro),
+      quando: escapeHtml(data.quando),
+      investimento: escapeHtml(data.investimento),
+      amenizador: escapeHtml(data.amenizador),
+      infosExtras: escapeHtml(data.infosExtras),
+      comoConheceu: escapeHtml(data.comoConheceu),
+      comoConheceuOutro: escapeHtml(data.comoConheceuOutro),
+    };
 
-      const data = req.body || {};
+    const rawWhatsapp = (data.whatsapp || '').replace(/\D/g, '');
+    const whatsappLink = rawWhatsapp ? `https://wa.me/55${rawWhatsapp.replace(/^55/, '')}` : '';
 
-      // Sanitize all inputs
-      const safeData = {
-        nome: escapeHtml(data.nome),
-        instagram: escapeHtml(data.instagram),
-        whatsapp: escapeHtml(data.whatsapp),
-        ideia: escapeHtml(data.ideia),
-        local: escapeHtml(data.local),
-        localOutro: escapeHtml(data.localOutro),
-        lado: escapeHtml(data.lado),
-        tamanho: escapeHtml(data.tamanho),
-        condicaoPele: escapeHtml(data.condicaoPele),
-        condicaoPeleOutro: escapeHtml(data.condicaoPeleOutro),
-        quando: escapeHtml(data.quando),
-        investimento: escapeHtml(data.investimento),
-        amenizador: escapeHtml(data.amenizador),
-        infosExtras: escapeHtml(data.infosExtras),
-        comoConheceu: escapeHtml(data.comoConheceu),
-        comoConheceuOutro: escapeHtml(data.comoConheceuOutro),
-      };
-
-      const rawWhatsapp = (data.whatsapp || '').replace(/\D/g, '');
-      const whatsappLink = rawWhatsapp ? `https://wa.me/55${rawWhatsapp.replace(/^55/, '')}` : '';
-
-      // Build structured HTML email
-      let emailHtml = `
+    const emailHtml = `
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -69,20 +56,14 @@ async function startServer() {
     <tr>
       <td align="center">
         <table width="100%" max-width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; background-color: #141414; border: 1px solid #c5a059; border-radius: 4px; overflow: hidden;">
-          
-          <!-- Header -->
           <tr>
             <td style="background-color: #000000; padding: 30px 24px; text-align: center; border-bottom: 2px solid #c5a059;">
               <h1 style="margin: 0; color: #c5a059; font-size: 24px; letter-spacing: 2px; text-transform: uppercase; font-family: Georgia, serif;">FELIPE GARAGEM TATTOO</h1>
               <p style="margin: 8px 0 0 0; color: #ffffff; font-size: 14px; letter-spacing: 1px;">NOVA SOLICITAÇÃO DE TATUAGEM</p>
             </td>
           </tr>
-
-          <!-- Content Body -->
           <tr>
             <td style="padding: 24px;">
-              
-              <!-- 01. Contato -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px; background-color: #1c1c1c; border-left: 4px solid #c5a059; padding: 16px;">
                 <tr>
                   <td>
@@ -97,7 +78,6 @@ async function startServer() {
                 </tr>
               </table>
 
-              <!-- 02. Sobre a Tatuagem -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px; background-color: #1c1c1c; border-left: 4px solid #c5a059; padding: 16px;">
                 <tr>
                   <td>
@@ -114,7 +94,6 @@ async function startServer() {
                 </tr>
               </table>
 
-              <!-- 03. Planejamento -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px; background-color: #1c1c1c; border-left: 4px solid #c5a059; padding: 16px;">
                 <tr>
                   <td>
@@ -132,7 +111,6 @@ async function startServer() {
                 </tr>
               </table>
 
-              <!-- 04. Referências -->
               ${Array.isArray(data.imagens) && data.imagens.length > 0 ? `
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px; background-color: #1c1c1c; border-left: 4px solid #c5a059; padding: 16px;">
                 <tr>
@@ -152,7 +130,6 @@ async function startServer() {
               </table>
               ` : ''}
 
-              <!-- Action button in email -->
               ${whatsappLink ? `
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 24px; text-align: center;">
                 <tr>
@@ -164,108 +141,60 @@ async function startServer() {
                 </tr>
               </table>
               ` : ''}
-
             </td>
           </tr>
-
-          <!-- Footer -->
           <tr>
             <td style="background-color: #0a0a0a; padding: 16px; text-align: center; border-top: 1px solid #222222; font-size: 12px; color: #777777;">
               Enviado automaticamente pelo formulário oficial de felipegaragemtattoo.com.br
             </td>
           </tr>
-
         </table>
       </td>
     </tr>
   </table>
 </body>
 </html>
-      `;
+    `;
 
-      // Handle attachments if fallback base64 images were provided
-      const attachmentsList: Array<{ filename: string; content: string }> = [];
-      if (Array.isArray(data.attachments)) {
-        for (const att of data.attachments) {
-          if (att && att.content) {
-            // Remove data URI prefix if present (e.g. data:image/png;base64,)
-            const cleanContent = att.content.replace(/^data:image\/[a-zA-Z]+;base64,/, '');
-            attachmentsList.push({
-              filename: att.filename || `referencia_${Date.now()}.jpg`,
-              content: cleanContent,
-            });
-          }
+    const attachmentsList: Array<{ filename: string; content: string }> = [];
+    if (Array.isArray(data.attachments)) {
+      for (const att of data.attachments) {
+        if (att && att.content) {
+          const cleanContent = att.content.replace(/^data:image\/[a-zA-Z]+;base64,/, '');
+          attachmentsList.push({
+            filename: att.filename || `referencia_${Date.now()}.jpg`,
+            content: cleanContent,
+          });
         }
       }
-
-      if (!resendKey || !toEmail) {
-        console.warn('[Resend Warning] RESEND_API_KEY or RESEND_TO_EMAIL is not configured. Logging payload safely:');
-        console.log({ nome: safeData.nome, whatsapp: safeData.whatsapp, ideia: safeData.ideia });
-        // Return 200 OK so that client-side flow & WhatsApp redirect are never blocked
-        return res.status(200).json({ 
-          success: true, 
-          emailSent: false, 
-          message: 'Form processed (Resend credentials not set on server)' 
-        });
-      }
-
-      const resend = new Resend(resendKey);
-
-      const emailPayload: any = {
-        from: 'onboarding@resend.dev',
-        to: [toEmail],
-        subject: `Nova Solicitação de Tatuagem: ${safeData.nome || 'Cliente'}`,
-        html: emailHtml,
-      };
-
-      if (attachmentsList.length > 0) {
-        emailPayload.attachments = attachmentsList;
-      }
-
-      const { data: emailData, error } = await resend.emails.send(emailPayload);
-
-      if (error) {
-        console.error('[Resend Error] Failed to send email via Resend:', error);
-        // Non-blocking response: return success=true with warning so user UX is preserved
-        return res.status(200).json({ 
-          success: true, 
-          emailSent: false, 
-          error: error.message 
-        });
-      }
-
-      console.log('[Resend Success] Email delivered successfully. ID:', emailData?.id);
-      return res.status(200).json({ success: true, emailSent: true, id: emailData?.id });
-
-    } catch (error: any) {
-      console.error('[Server Error in /api/send-budget]:', error);
-      // Even on unexpected exceptions, return 200 to prevent breaking the client WhatsApp redirect
-      return res.status(200).json({ 
-        success: true, 
-        emailSent: false, 
-        error: 'Handled server exception' 
-      });
     }
-  });
 
-  // Vite middleware for development
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*all', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
+    if (!resendKey || !toEmail) {
+      console.warn('[Resend Warning] RESEND_API_KEY or RESEND_TO_EMAIL is not set.');
+      return res.status(200).json({ success: true, emailSent: false });
+    }
+
+    const resend = new Resend(resendKey);
+    const emailPayload: any = {
+      from: 'onboarding@resend.dev',
+      to: [toEmail],
+      subject: `Nova Solicitação de Tatuagem: ${safeData.nome || 'Cliente'}`,
+      html: emailHtml,
+    };
+
+    if (attachmentsList.length > 0) {
+      emailPayload.attachments = attachmentsList;
+    }
+
+    const { data: emailData, error } = await resend.emails.send(emailPayload);
+    if (error) {
+      console.error('[Resend Error]:', error);
+      return res.status(200).json({ success: true, emailSent: false, error: error.message });
+    }
+
+    return res.status(200).json({ success: true, emailSent: true, id: emailData?.id });
+  } catch (error: any) {
+    console.error('[API Error in send-budget]:', error);
+    return res.status(200).json({ success: true, emailSent: false, error: 'Internal handled error' });
   }
-
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
 }
-
-startServer();

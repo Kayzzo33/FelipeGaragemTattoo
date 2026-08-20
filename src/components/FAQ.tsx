@@ -39,7 +39,7 @@ export function FAQ() {
   }, []);
 
   return (
-    <section className="py-24 md:py-32 bg-black px-6 md:px-12 max-w-4xl mx-auto">
+    <section id="faq" className="py-24 md:py-32 bg-black px-6 md:px-12 max-w-4xl mx-auto">
       <h2 ref={titleRef} className="text-3xl md:text-5xl font-serif text-cream mb-16 text-center">Perguntas Frequentes</h2>
       
       <div ref={listRef} className="space-y-2">

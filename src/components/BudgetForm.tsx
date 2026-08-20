@@ -3,7 +3,8 @@ import { useForm, Controller } from 'react-hook-form';
 import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
 import { pricingCatalog, bodyAreas, investmentBands } from '../lib/pricingCatalog';
-import { Loader2 } from 'lucide-react';
+import { trackMetaLead } from '../lib/metaPixel';
+import { Loader2, UploadCloud, CheckCircle2, Image as ImageIcon } from 'lucide-react';
 
 type FormValues = {
   nome: string;
@@ -24,8 +25,21 @@ type FormValues = {
   comoConheceuOutro?: string;
 };
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+
+// Convert file to base64 for email attachment fallback
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (err) => reject(err);
+  });
+}
+
 export function BudgetForm() {
-  const { register, handleSubmit, control, watch, formState: { errors } } = useForm<FormValues>();
+  const { register, handleSubmit, control, watch } = useForm<FormValues>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   
@@ -38,13 +52,32 @@ export function BudgetForm() {
   const selectedCondicaoPele = watch('condicaoPele');
   const selectedComoConheceu = watch('comoConheceu');
 
-  const uploadFile = async (file: File) => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+  const validateAndFilterFiles = (files: File[]): File[] => {
+    const validFiles: File[] = [];
+    for (const file of files) {
+      if (!ALLOWED_TYPES.includes(file.type.toLowerCase()) && !/\.(jpe?g|png|webp)$/i.test(file.name)) {
+        alert(`O arquivo "${file.name}" não é uma imagem permitida. Use JPG, PNG ou WEBP.`);
+        continue;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        alert(`O arquivo "${file.name}" excede o tamanho máximo de 5MB.`);
+        continue;
+      }
+      validFiles.push(file);
+    }
+    return validFiles;
+  };
+
+  const uploadFileToSupabase = async (file: File, index = 0): Promise<string> => {
+    const fileExt = file.name.split('.').pop() || 'jpg';
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}_${index}.${fileExt}`;
     
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('reference-images')
-      .upload(fileName, file);
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
       
     if (error) throw error;
     
@@ -58,53 +91,104 @@ export function BudgetForm() {
   const onSubmit = async (data: FormValues) => {
     try {
       setIsSubmitting(true);
+
+      // Track Meta Pixel Lead event upon click/submit
+      trackMetaLead({
+        nome: data.nome,
+        local: data.local,
+        investimento: data.investimento,
+      });
       
       const imageUrls: string[] = [];
+      const fallbackAttachments: Array<{ filename: string; content: string; contentType: string }> = [];
       
-      if (photoRegiao) {
-        const url = await uploadFile(photoRegiao);
-        imageUrls.push(url);
-      }
-      
-      for (const file of refImages) {
-        const url = await uploadFile(file);
-        imageUrls.push(url);
+      const allSelectedFiles: File[] = [];
+      if (photoRegiao) allSelectedFiles.push(photoRegiao);
+      allSelectedFiles.push(...refImages);
+
+      // Try uploading to Supabase Storage, with automatic Base64 fallback if storage fails
+      for (let i = 0; i < allSelectedFiles.length; i++) {
+        const file = allSelectedFiles[i];
+        try {
+          const url = await uploadFileToSupabase(file, i);
+          imageUrls.push(url);
+        } catch (storageErr) {
+          console.warn(`Supabase storage upload failed for ${file.name}, using base64 email attachment fallback:`, storageErr);
+          try {
+            const base64Data = await fileToBase64(file);
+            fallbackAttachments.push({
+              filename: file.name,
+              content: base64Data,
+              contentType: file.type || 'image/jpeg',
+            });
+          } catch (base64Err) {
+            console.error('Failed to convert file to base64 fallback:', base64Err);
+          }
+        }
       }
 
       const payload = {
         ...data,
         imagens: imageUrls,
+        attachments: fallbackAttachments,
       };
 
-      // Save to Supabase DB
-      const { error: dbError } = await supabase
-        .from('orcamentos')
-        .insert([{
-          ...payload,
-          created_at: new Date().toISOString()
-        }]);
-
-      // Note: If 'orcamentos' table doesn't exist, this might fail. We should proceed with email anyway or handle it gracefully.
-      if (dbError) {
-        console.warn('Supabase insert failed, continuing to email:', dbError);
+      // Optional: attempt save to Supabase DB if table exists (graceful ignore if not)
+      try {
+        await supabase
+          .from('orcamentos')
+          .insert([{
+            ...data,
+            imagens: imageUrls,
+            created_at: new Date().toISOString()
+          }]);
+      } catch (dbErr) {
+        console.warn('Supabase DB insert skipped/failed (non-blocking):', dbErr);
       }
 
-      // Send Email via Express backend
-      const res = await fetch('/api/send-budget', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      // Send Email via Express backend (Resend API)
+      try {
+        await fetch('/api/send-budget', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      } catch (emailErr) {
+        console.error('Email API call caught error (non-blocking for user):', emailErr);
+      }
 
-      const resData = await res.json();
-      if (!resData.success) {
-        throw new Error('Falha ao enviar email');
+      // Build WhatsApp message
+      const formattedWhatsappMsg = `Olá Felipe! Acabei de enviar minha solicitação de orçamento pelo site:
+- *Nome:* ${data.nome}
+- *Instagram:* ${data.instagram ? `@${data.instagram.replace(/^@/, '')}` : 'Não informado'}
+- *WhatsApp:* ${data.whatsapp}
+- *Ideia:* ${data.ideia}
+- *Local:* ${data.local}${data.localOutro ? ` (${data.localOutro})` : ''} - ${data.lado}
+- *Tamanho:* ${data.tamanho}
+- *Condição da pele:* ${data.condicaoPele}${data.condicaoPeleOutro ? ` (${data.condicaoPeleOutro})` : ''}
+- *Previsão:* ${data.quando}
+- *Investimento:* ${data.investimento}
+- *Amenizador 3D:* ${data.amenizador}
+${data.infosExtras ? `- *Extras:* ${data.infosExtras}` : ''}`;
+
+      const whatsappUrl = `https://wa.me/5511989719861?text=${encodeURIComponent(formattedWhatsappMsg)}`;
+
+      // Non-blocking redirect to WhatsApp
+      try {
+        window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+      } catch (e) {
+        console.warn('Popup blocked, will provide direct button on success screen.');
       }
 
       setIsSuccess(true);
     } catch (error) {
       console.error('Submission error:', error);
-      alert('Houve um erro ao enviar seu orçamento. Por favor, tente novamente ou entre em contato via WhatsApp.');
+      // Even on error, do not trap user: redirect to WhatsApp
+      const fallbackMsg = `Olá Felipe! Tentei enviar meu orçamento pelo site:
+- *Nome:* ${data.nome}
+- *Ideia:* ${data.ideia}`;
+      window.open(`https://wa.me/5511989719861?text=${encodeURIComponent(fallbackMsg)}`, '_blank', 'noopener,noreferrer');
+      setIsSuccess(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -153,6 +237,7 @@ export function BudgetForm() {
 
   return (
     <section id="budget" className="py-24 md:py-32 bg-black px-6 md:px-12 relative overflow-hidden">
+      <div id="contact" className="absolute -top-20" />
       <div className="max-w-3xl mx-auto relative z-10">
         <div className="text-center mb-20">
           <span className="text-gold text-xs tracking-[0.2em] uppercase font-medium mb-4 block">NOVO PROJETO</span>
@@ -292,35 +377,78 @@ export function BudgetForm() {
           {/* BLOCO 3 - Referências */}
           <div className="space-y-8">
             <h3 className="text-xl font-serif text-gold border-b border-gold/20 pb-4">03. Referências Visuais</h3>
-            <p className="text-cream/50 text-sm font-light">As imagens ficam anexadas ao seu orçamento. Os formatos permitidos são JPG e PNG.</p>
+            <p className="text-cream/50 text-sm font-light">As imagens ficam anexadas ao seu orçamento. Os formatos permitidos são JPG, PNG e WEBP (máx. 5MB).</p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <label className="cursor-pointer group flex flex-col items-center justify-center text-center gap-4 py-12 px-6 border border-cream/20 hover:border-cream/50 transition-colors w-full rounded-none">
-                <span className="text-cream text-sm uppercase tracking-widest group-hover:text-gold transition-colors">Foto da Região (Seu corpo)</span>
-                <span className="text-cream/40 text-xs font-light">Toque para selecionar do dispositivo</span>
+              {/* Foto da Região */}
+              <label className="cursor-pointer group relative flex flex-col items-center justify-center text-center gap-4 p-8 sm:p-10 bg-zinc-900/90 hover:bg-zinc-800/90 border border-gold/40 hover:border-gold transition-all duration-300 rounded-lg shadow-xl overflow-hidden">
+                <div className="w-14 h-14 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center text-gold group-hover:scale-110 group-hover:bg-gold group-hover:text-black transition-all duration-300 shadow-inner">
+                  {photoRegiao ? <CheckCircle2 size={26} className="text-emerald-400 group-hover:text-black" /> : <UploadCloud size={26} />}
+                </div>
+                
+                <div className="space-y-1 z-10">
+                  <span className="text-cream text-sm font-semibold uppercase tracking-widest group-hover:text-gold transition-colors block">
+                    Foto da Região (Seu corpo)
+                  </span>
+                  <span className="text-zinc-400 text-xs font-light block">
+                    {photoRegiao ? 'Arquivo pronto para envio' : 'Clique ou toque para carregar foto do local'}
+                  </span>
+                </div>
+
                 <input 
                   type="file" 
-                  accept="image/*"
-                  onChange={(e) => setPhotoRegiao(e.target.files?.[0] || null)}
-                  className="hidden"
-                />
-                {photoRegiao && <span className="text-gold text-xs mt-2 truncate max-w-[200px]">{photoRegiao.name}</span>}
-              </label>
-              
-              <label className="cursor-pointer group flex flex-col items-center justify-center text-center gap-4 py-12 px-6 border border-cream/20 hover:border-cream/50 transition-colors w-full rounded-none">
-                <span className="text-cream text-sm uppercase tracking-widest group-hover:text-gold transition-colors">Imagens de Referência</span>
-                <span className="text-cream/40 text-xs font-light">Toque para selecionar do dispositivo</span>
-                <input 
-                  type="file" 
-                  multiple
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp"
                   onChange={(e) => {
-                    const files = Array.from(e.target.files || []);
-                    setRefImages(files);
+                    const fileList = e.target.files;
+                    const files: File[] = fileList ? Array.from(fileList) : [];
+                    const validated = validateAndFilterFiles(files);
+                    setPhotoRegiao(validated[0] || null);
                   }}
                   className="hidden"
                 />
-                {refImages.length > 0 && <span className="text-gold text-xs mt-2 truncate max-w-[200px]">{refImages.length} arquivo(s) selecionado(s)</span>}
+
+                {photoRegiao && (
+                  <div className="flex items-center gap-2 bg-black/60 border border-gold/30 px-3 py-1.5 rounded text-xs text-gold font-medium mt-2 max-w-full">
+                    <ImageIcon size={14} className="shrink-0" />
+                    <span className="truncate max-w-[220px]">{photoRegiao.name}</span>
+                  </div>
+                )}
+              </label>
+              
+              {/* Imagens de Referência */}
+              <label className="cursor-pointer group relative flex flex-col items-center justify-center text-center gap-4 p-8 sm:p-10 bg-zinc-900/90 hover:bg-zinc-800/90 border border-gold/40 hover:border-gold transition-all duration-300 rounded-lg shadow-xl overflow-hidden">
+                <div className="w-14 h-14 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center text-gold group-hover:scale-110 group-hover:bg-gold group-hover:text-black transition-all duration-300 shadow-inner">
+                  {refImages.length > 0 ? <CheckCircle2 size={26} className="text-emerald-400 group-hover:text-black" /> : <UploadCloud size={26} />}
+                </div>
+
+                <div className="space-y-1 z-10">
+                  <span className="text-cream text-sm font-semibold uppercase tracking-widest group-hover:text-gold transition-colors block">
+                    Imagens de Referência
+                  </span>
+                  <span className="text-zinc-400 text-xs font-light block">
+                    {refImages.length > 0 ? `${refImages.length} referência(s) selecionada(s)` : 'Clique ou toque para carregar imagens de inspiração'}
+                  </span>
+                </div>
+
+                <input 
+                  type="file" 
+                  multiple
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(e) => {
+                    const fileList = e.target.files;
+                    const files: File[] = fileList ? Array.from(fileList) : [];
+                    const validated = validateAndFilterFiles(files);
+                    setRefImages(validated);
+                  }}
+                  className="hidden"
+                />
+
+                {refImages.length > 0 && (
+                  <div className="flex items-center gap-2 bg-black/60 border border-gold/30 px-3 py-1.5 rounded text-xs text-gold font-medium mt-2 max-w-full">
+                    <ImageIcon size={14} className="shrink-0" />
+                    <span>{refImages.length} arquivo(s) selecionado(s)</span>
+                  </div>
+                )}
               </label>
             </div>
           </div>

@@ -1,8 +1,25 @@
-export function Footer() {
-  const scrollTo = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+interface FooterProps {
+  onOpenPrivacyPolicy?: () => void;
+  onNavigate?: (route: 'home' | 'depoimentos', sectionId?: string) => void;
+}
+
+export function Footer({ onOpenPrivacyPolicy, onNavigate }: FooterProps) {
+  const handleNavClick = (sectionId?: string) => {
+    if (onNavigate) {
+      onNavigate('home', sectionId);
+    } else {
+      const element = document.getElementById(sectionId || 'root');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
+  const handleDepoimentosClick = () => {
+    if (onNavigate) {
+      onNavigate('depoimentos');
+    } else {
+      window.location.href = '/depoimentos';
     }
   };
 
@@ -11,7 +28,10 @@ export function Footer() {
       <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row justify-between items-start md:items-end gap-16 mb-24">
         
         <div>
-          <h2 className="text-[10vw] md:text-7xl font-serif text-cream leading-none tracking-tighter mb-4">
+          <h2 
+            onClick={() => handleNavClick()}
+            className="text-[10vw] md:text-7xl font-serif text-cream leading-none tracking-tighter mb-4 cursor-pointer hover:text-gold transition-colors"
+          >
             FELIPE<br/>GARAGEM
           </h2>
         </div>
@@ -19,9 +39,16 @@ export function Footer() {
         <div className="flex gap-16 md:gap-24">
           <div className="flex flex-col gap-4">
             <span className="text-gold text-xs tracking-[0.2em] uppercase font-medium mb-2">Menu</span>
-            <button onClick={() => scrollTo('portfolio')} className="text-cream/70 hover:text-cream text-left transition-colors font-light text-lg">Portfolio</button>
-            <button onClick={() => scrollTo('about')} className="text-cream/70 hover:text-cream text-left transition-colors font-light text-lg">Sobre</button>
-            <button onClick={() => scrollTo('contact')} className="text-cream/70 hover:text-cream text-left transition-colors font-light text-lg">Contato</button>
+            <button onClick={() => handleNavClick('portfolio')} className="text-cream/70 hover:text-cream text-left transition-colors font-light text-lg">Portfolio</button>
+            <button onClick={() => handleNavClick('about')} className="text-cream/70 hover:text-cream text-left transition-colors font-light text-lg">Sobre</button>
+            <button onClick={() => handleNavClick('differentials')} className="text-cream/70 hover:text-cream text-left transition-colors font-light text-lg">Diferenciais</button>
+            <button onClick={handleDepoimentosClick} className="text-cream/70 hover:text-gold text-left transition-colors font-light text-lg">Depoimentos</button>
+            <button onClick={() => handleNavClick('contact')} className="text-cream/70 hover:text-cream text-left transition-colors font-light text-lg">Contato</button>
+            {onOpenPrivacyPolicy && (
+              <button onClick={onOpenPrivacyPolicy} className="text-cream/50 hover:text-gold text-left transition-colors font-light text-sm pt-2">
+                Privacidade (LGPD)
+              </button>
+            )}
           </div>
 
           <div className="flex flex-col gap-4">
