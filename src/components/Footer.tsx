@@ -1,12 +1,13 @@
 interface FooterProps {
   onOpenPrivacyPolicy?: () => void;
-  onNavigate?: (route: 'home' | 'depoimentos', sectionId?: string) => void;
+  onOpenTestimonials?: () => void;
+  onNavigateSection?: (sectionId?: string) => void;
 }
 
-export function Footer({ onOpenPrivacyPolicy, onNavigate }: FooterProps) {
+export function Footer({ onOpenPrivacyPolicy, onOpenTestimonials, onNavigateSection }: FooterProps) {
   const handleNavClick = (sectionId?: string) => {
-    if (onNavigate) {
-      onNavigate('home', sectionId);
+    if (onNavigateSection) {
+      onNavigateSection(sectionId);
     } else {
       const element = document.getElementById(sectionId || 'root');
       if (element) {
@@ -16,10 +17,8 @@ export function Footer({ onOpenPrivacyPolicy, onNavigate }: FooterProps) {
   };
 
   const handleDepoimentosClick = () => {
-    if (onNavigate) {
-      onNavigate('depoimentos');
-    } else {
-      window.location.href = '/depoimentos';
+    if (onOpenTestimonials) {
+      onOpenTestimonials();
     }
   };
 

@@ -21,7 +21,7 @@ export function Hero() {
             top: 22%;
             left: 2%;
             font-size: clamp(4rem, 16vw, 16rem);
-            z-index: 10;
+            z-index: 25;
         }
         .text-garagem {
             top: 60%;
@@ -61,46 +61,46 @@ export function Hero() {
         }
         
         @media (max-width: 1024px) {
-            .text-felipe { font-size: 15vw; }
-            .text-garagem { font-size: 13vw; right: 2%; }
+            .text-felipe { font-size: 15vw; z-index: 25; }
+            .text-garagem { font-size: 13vw; right: 2%; z-index: 30; }
             .img-left { width: 28%; }
             .img-right { width: 38%; }
         }
         @media (max-width: 768px) {
-            .hero-container { min-height: 120vh; }
-            .text-felipe { top: 10%; left: 4%; font-size: 26vw; z-index: 10; }
+            .hero-container { min-height: 110vh; }
+            .text-felipe { top: 8%; left: 4%; font-size: 24vw; z-index: 25; }
             
             .img-mobile-extra { 
                 display: flex; 
-                top: 20%; left: 8%; width: 55%; aspect-ratio: 2 / 3.2; z-index: 20; 
+                top: 22%; left: 8%; width: 50%; aspect-ratio: 2 / 3; z-index: 15; 
             }
             .img-right { 
-                top: 28%; right: 8%; width: 45%; aspect-ratio: 1 / 1.1; z-index: 25; 
+                top: 32%; right: 6%; width: 44%; aspect-ratio: 1 / 1.1; z-index: 18; 
             }
             .img-left { 
-                top: 52%; left: 35%; width: 50%; aspect-ratio: 4 / 3; z-index: 22; 
+                top: 54%; left: 25%; width: 46%; aspect-ratio: 4 / 3; z-index: 16; 
             }
             
             .text-garagem { 
-                top: 65%; left: 50%; transform: translateX(-50%); font-size: 19vw; z-index: 30; 
+                top: 68%; left: 50%; transform: translateX(-50%); font-size: 18vw; z-index: 30; 
             }
         }
         @media (max-width: 480px) {
-            .hero-container { min-height: 125vh; }
-            .text-felipe { top: 10%; left: 4%; font-size: 28vw; z-index: 10; }
+            .hero-container { min-height: 115vh; }
+            .text-felipe { top: 8%; left: 4%; font-size: 25vw; z-index: 25; }
             
             .img-mobile-extra { 
-                top: 22%; left: 6%; width: 52%; aspect-ratio: 2 / 3.2; z-index: 20; 
+                top: 22%; left: 6%; width: 48%; aspect-ratio: 2 / 3; z-index: 15; 
             }
             .img-right { 
-                top: 30%; right: 6%; width: 48%; aspect-ratio: 1 / 1.1; z-index: 25; 
+                top: 32%; right: 4%; width: 46%; aspect-ratio: 1 / 1.1; z-index: 18; 
             }
             .img-left { 
-                top: 54%; left: 40%; width: 55%; aspect-ratio: 5 / 4; z-index: 22; 
+                top: 54%; left: 30%; width: 50%; aspect-ratio: 5 / 4; z-index: 16; 
             }
             
             .text-garagem { 
-                top: 68%; left: 50%; transform: translateX(-50%); right: auto; font-size: 20vw; z-index: 30; 
+                top: 70%; left: 50%; transform: translateX(-50%); right: auto; font-size: 19vw; z-index: 30; 
             }
         }
       `}} />

@@ -26,6 +26,98 @@ async function startServer() {
     res.json({ status: 'ok' });
   });
 
+  // Native MP4 Video Stream with fast Local Caching & Google Drive Proxy (with 206 Partial Content support)
+  app.get('/api/video-stream/:fileId', (req, res) => {
+    const { fileId } = req.params;
+    if (!fileId || typeof fileId !== 'string') {
+      return res.status(400).send('Invalid file ID');
+    }
+
+    const fs = require('fs');
+    // Map of known IDs to local files
+    const localVideoMap: Record<string, string> = {
+      '1hKdTUQ4Wm6n5zywo10czirNsVhS6GyyC': path.join(process.cwd(), 'public', 'videos', 'video1.mp4'),
+      'video1': path.join(process.cwd(), 'public', 'videos', 'video1.mp4'),
+      '1NQ0OwCxJZb6fJFM1tSIDPdgCSHMLXwtj': path.join(process.cwd(), 'public', 'videos', 'video2.mp4'),
+      'video2': path.join(process.cwd(), 'public', 'videos', 'video2.mp4'),
+      '1dgr8-gsp2VB7SjrP3a6j13h0P7vnkb0s': path.join(process.cwd(), 'public', 'videos', 'video3.mp4'),
+      'video3': path.join(process.cwd(), 'public', 'videos', 'video3.mp4'),
+    };
+
+    const targetLocal = localVideoMap[fileId] || path.join(process.cwd(), 'public', 'videos', `${fileId}.mp4`);
+
+    if (fs.existsSync(targetLocal) && fs.statSync(targetLocal).size > 100000) {
+      const stat = fs.statSync(targetLocal);
+      const fileSize = stat.size;
+      const range = req.headers.range;
+
+      if (range) {
+        const parts = range.replace(/bytes=/, '').split('-');
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+        const chunksize = end - start + 1;
+        const file = fs.createReadStream(targetLocal, { start, end });
+        const head = {
+          'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': chunksize,
+          'Content-Type': 'video/mp4',
+          'Access-Control-Allow-Origin': '*',
+        };
+        res.writeHead(206, head);
+        file.pipe(res);
+      } else {
+        const head = {
+          'Content-Length': fileSize,
+          'Content-Type': 'video/mp4',
+          'Accept-Ranges': 'bytes',
+          'Access-Control-Allow-Origin': '*',
+        };
+        res.writeHead(200, head);
+        fs.createReadStream(targetLocal).pipe(res);
+      }
+      return;
+    }
+
+    const driveUrl = `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`;
+    const clientRange = req.headers.range;
+
+    const requestHeaders: Record<string, string> = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    };
+
+    if (clientRange) {
+      requestHeaders['Range'] = clientRange;
+    }
+
+    import('https').then((https) => {
+      const driveReq = https.get(driveUrl, { headers: requestHeaders }, (driveRes) => {
+        const responseHeaders: Record<string, string | string[] | undefined> = {
+          'Content-Type': 'video/mp4',
+          'Accept-Ranges': 'bytes',
+          'Access-Control-Allow-Origin': '*',
+        };
+
+        if (driveRes.headers['content-length']) {
+          responseHeaders['Content-Length'] = driveRes.headers['content-length'];
+        }
+        if (driveRes.headers['content-range']) {
+          responseHeaders['Content-Range'] = driveRes.headers['content-range'];
+        }
+
+        res.writeHead(driveRes.statusCode || 200, responseHeaders);
+        driveRes.pipe(res);
+      });
+
+      driveReq.on('error', (err) => {
+        console.error('[Video Proxy Error]:', err);
+        if (!res.headersSent) {
+          res.status(500).send('Streaming error');
+        }
+      });
+    });
+  });
+
   app.post('/api/send-budget', async (req, res) => {
     try {
       const resendKey = process.env.RESEND_API_KEY;

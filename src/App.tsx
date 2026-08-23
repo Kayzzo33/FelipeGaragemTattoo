@@ -12,38 +12,37 @@ import { BudgetForm } from './components/BudgetForm';
 import { Footer } from './components/Footer';
 import { CookieConsent } from './components/CookieConsent';
 import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
-import { TestimonialsPage } from './pages/TestimonialsPage';
+import { TestimonialsFullscreen } from './components/TestimonialsFullscreen';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-type Route = 'home' | 'depoimentos';
-
 export default function App() {
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
-  const [currentRoute, setCurrentRoute] = useState<Route>(() => {
+  const [isTestimonialsOpen, setIsTestimonialsOpen] = useState(() => {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname.toLowerCase();
-      if (path.includes('depoimento')) return 'depoimentos';
+      if (path.includes('depoimento')) return true;
     }
-    return 'home';
+    return false;
   });
 
   const lenisRef = useRef<Lenis | null>(null);
 
+  // Sync route on browser back/forward buttons (popstate)
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname.toLowerCase();
       if (path.includes('depoimento')) {
-        setCurrentRoute('depoimentos');
+        setIsTestimonialsOpen(true);
       } else {
-        setCurrentRoute('home');
+        setIsTestimonialsOpen(false);
       }
     };
-
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Initialize smooth scroll engine
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -76,88 +75,80 @@ export default function App() {
     };
   }, []);
 
-  useEffect(() => {
-    if (lenisRef.current) {
-      lenisRef.current.scrollTo(0, { immediate: true });
-    } else {
-      window.scrollTo(0, 0);
-    }
-    const timer = setTimeout(() => {
+  const handleOpenTestimonials = () => {
+    window.history.pushState({}, '', '/depoimentos');
+    setIsTestimonialsOpen(true);
+  };
+
+  const handleCloseTestimonials = () => {
+    window.history.pushState({}, '', '/');
+    setIsTestimonialsOpen(false);
+    setTimeout(() => {
       ScrollTrigger.refresh();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [currentRoute]);
+    }, 80);
+  };
 
-  const handleNavigate = (route: Route, sectionId?: string) => {
-    if (route === 'depoimentos') {
-      window.history.pushState({}, '', '/depoimentos');
-      setCurrentRoute('depoimentos');
-      window.scrollTo(0, 0);
-      if (lenisRef.current) {
-        lenisRef.current.scrollTo(0, { immediate: true });
-      }
-      setTimeout(() => {
-        ScrollTrigger.refresh();
-      }, 50);
-    } else {
-      const targetPath = sectionId ? `/#${sectionId}` : '/';
-      window.history.pushState({}, '', targetPath);
-      setCurrentRoute('home');
+  const handleOpenBudgetFromTestimonials = () => {
+    handleCloseTestimonials();
+    setTimeout(() => {
+      handleNavigateSection('budget');
+    }, 150);
+  };
 
-      if (sectionId) {
-        setTimeout(() => {
-          let el = document.getElementById(sectionId);
-          if (!el && (sectionId === 'contact' || sectionId === 'budget')) {
-            el = document.getElementById('budget') || document.getElementById('contact');
-          }
-          if (el) {
-            if (lenisRef.current) {
-              lenisRef.current.scrollTo(el, { duration: 1.2 });
-            } else {
-              el.scrollIntoView({ behavior: 'smooth' });
-            }
-          }
-          ScrollTrigger.refresh();
-        }, 100);
-      } else {
-        window.scrollTo(0, 0);
+  const handleNavigateSection = (sectionId?: string) => {
+    const targetId = sectionId === 'contact' ? 'budget' : sectionId;
+    if (targetId) {
+      const el = document.getElementById(targetId);
+      if (el) {
         if (lenisRef.current) {
-          lenisRef.current.scrollTo(0, { immediate: true });
+          lenisRef.current.scrollTo(el, { duration: 1.2 });
+        } else {
+          el.scrollIntoView({ behavior: 'smooth' });
         }
-        setTimeout(() => {
-          ScrollTrigger.refresh();
-        }, 50);
+      }
+    } else {
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(0, { duration: 1.2 });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
   };
 
   return (
     <div className="bg-black min-h-screen text-cream font-sans">
-      <Header currentPage={currentRoute} onNavigate={handleNavigate} />
+      <Header 
+        isTestimonialsOpen={isTestimonialsOpen} 
+        onOpenTestimonials={handleOpenTestimonials} 
+        onNavigateSection={handleNavigateSection} 
+      />
       
-      {currentRoute === 'home' ? (
-        <main>
-          <Hero />
-          <ValueProposition />
-          <About />
-          <PortfolioCarousel />
-          <PinnedScroll />
-          <Differentials />
-          <FAQ />
-          <BudgetForm />
-        </main>
-      ) : (
-        <main>
-          <TestimonialsPage onNavigateHome={(sectionId) => handleNavigate('home', sectionId)} />
-        </main>
+      {/* Testimonials Fullscreen Overlay */}
+      {isTestimonialsOpen && (
+        <TestimonialsFullscreen 
+          onClose={handleCloseTestimonials} 
+          onOpenBudget={handleOpenBudgetFromTestimonials}
+        />
       )}
+
+      <main>
+        <Hero />
+        <ValueProposition />
+        <About />
+        <PortfolioCarousel />
+        <PinnedScroll />
+        <Differentials />
+        <FAQ />
+        <BudgetForm />
+      </main>
 
       <Footer 
         onOpenPrivacyPolicy={() => setIsPrivacyModalOpen(true)} 
-        onNavigate={handleNavigate}
+        onOpenTestimonials={handleOpenTestimonials}
+        onNavigateSection={handleNavigateSection}
       />
       
-      {/* LGPD Cookie Consent Banner & Privacy Modal across all pages */}
+      {/* LGPD Cookie Consent Banner & Privacy Modal */}
       <CookieConsent onOpenPrivacyPolicy={() => setIsPrivacyModalOpen(true)} />
       <PrivacyPolicyModal 
         isOpen={isPrivacyModalOpen} 

@@ -4,11 +4,12 @@ import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface HeaderProps {
-  currentPage?: 'home' | 'depoimentos';
-  onNavigate?: (route: 'home' | 'depoimentos', sectionId?: string) => void;
+  isTestimonialsOpen?: boolean;
+  onOpenTestimonials?: () => void;
+  onNavigateSection?: (sectionId?: string) => void;
 }
 
-export function Header({ currentPage = 'home', onNavigate }: HeaderProps) {
+export function Header({ isTestimonialsOpen = false, onOpenTestimonials, onNavigateSection }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -33,10 +34,11 @@ export function Header({ currentPage = 'home', onNavigate }: HeaderProps) {
 
   const handleNavClick = (sectionId?: string) => {
     setIsMobileMenuOpen(false);
-    if (onNavigate) {
-      onNavigate('home', sectionId);
-    } else if (sectionId) {
-      const target = document.getElementById(sectionId) || (sectionId === 'contact' ? document.getElementById('budget') : null);
+    if (onNavigateSection) {
+      onNavigateSection(sectionId);
+    } else {
+      const targetId = sectionId === 'contact' ? 'budget' : (sectionId || 'root');
+      const target = document.getElementById(targetId);
       if (target) {
         target.scrollIntoView({ behavior: 'smooth' });
       }
@@ -45,10 +47,8 @@ export function Header({ currentPage = 'home', onNavigate }: HeaderProps) {
 
   const handleDepoimentosClick = () => {
     setIsMobileMenuOpen(false);
-    if (onNavigate) {
-      onNavigate('depoimentos');
-    } else {
-      window.location.href = '/depoimentos';
+    if (onOpenTestimonials) {
+      onOpenTestimonials();
     }
   };
 
@@ -78,8 +78,8 @@ export function Header({ currentPage = 'home', onNavigate }: HeaderProps) {
             <button 
               onClick={handleDepoimentosClick} 
               className={cn(
-                'transition-all duration-300 font-medium tracking-normal text-gold drop-shadow-[0_0_8px_rgba(197,160,89,0.45)] hover:text-cream hover:drop-shadow-[0_0_12px_rgba(197,160,89,0.7)]',
-                currentPage === 'depoimentos' ? 'text-cream drop-shadow-[0_0_12px_rgba(197,160,89,0.8)] font-semibold' : ''
+                'transition-all duration-300 font-medium tracking-normal text-gold drop-shadow-[0_0_8px_rgba(197,160,89,0.45)] hover:text-cream hover:drop-shadow-[0_0_12px_rgba(197,160,89,0.7)] cursor-pointer',
+                isTestimonialsOpen ? 'text-cream drop-shadow-[0_0_12px_rgba(197,160,89,0.8)] font-semibold' : ''
               )}
             >
               Depoimentos
@@ -120,9 +120,9 @@ export function Header({ currentPage = 'home', onNavigate }: HeaderProps) {
         <button 
           onClick={handleDepoimentosClick} 
           className={cn(
-            'font-serif text-2xl transition-all duration-300',
+            'font-serif text-2xl transition-all duration-300 cursor-pointer',
             'text-gold drop-shadow-[0_0_10px_rgba(197,160,89,0.5)] hover:text-cream',
-            currentPage === 'depoimentos' ? 'text-cream drop-shadow-[0_0_14px_rgba(197,160,89,0.8)] font-medium' : ''
+            isTestimonialsOpen ? 'text-cream drop-shadow-[0_0_14px_rgba(197,160,89,0.8)] font-medium' : ''
           )}
         >
           Depoimentos
