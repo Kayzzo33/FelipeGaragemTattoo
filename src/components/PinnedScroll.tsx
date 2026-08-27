@@ -49,37 +49,49 @@ export function PinnedScroll() {
       {/* Background/Floating Images with real authorial artwork */}
       <div ref={img1Ref} className="absolute w-[32vw] sm:w-[25vw] max-w-[320px] aspect-[4/5] bg-zinc-900 border border-gold/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden rounded-sm opacity-60 hover:opacity-90 transition-opacity z-0">
         <img 
-          src="https://res.cloudinary.com/utnt7lxo/image/upload/v1787832229/25c36363-9a1e-49cf-b8b2-9563037f28c6.jpg" 
+          src="https://res.cloudinary.com/utnt7lxo/image/upload/f_auto,q_auto,w_600/v1787832229/25c36363-9a1e-49cf-b8b2-9563037f28c6.jpg" 
           alt="Arte Autoral 1 - Felipe Garagem" 
+          width="320"
+          height="400"
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover grayscale contrast-125 brightness-90 hover:grayscale-0 transition-all duration-500" 
-          loading="eager"
           referrerPolicy="no-referrer"
         />
       </div>
       <div ref={img2Ref} className="absolute w-[28vw] sm:w-[22vw] max-w-[280px] aspect-square bg-zinc-900 border border-gold/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden rounded-sm opacity-55 hover:opacity-90 transition-opacity z-0">
         <img 
-          src="https://res.cloudinary.com/utnt7lxo/image/upload/v1787833589/SaveInta.com_722811092_18342891163222512_8932647788294634271_n.jpg" 
+          src="https://res.cloudinary.com/utnt7lxo/image/upload/f_auto,q_auto,w_600/v1787833589/SaveInta.com_722811092_18342891163222512_8932647788294634271_n.jpg" 
           alt="Arte Autoral 2 - Felipe Garagem" 
+          width="280"
+          height="280"
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover grayscale contrast-125 brightness-90 hover:grayscale-0 transition-all duration-500" 
-          loading="eager"
           referrerPolicy="no-referrer"
         />
       </div>
       <div ref={img3Ref} className="absolute w-[26vw] sm:w-[20vw] max-w-[250px] aspect-[3/4] bg-zinc-900 border border-gold/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden rounded-sm opacity-60 hover:opacity-90 transition-opacity z-0">
         <img 
-          src="https://res.cloudinary.com/utnt7lxo/image/upload/v1787833587/SaveInta.com_726740248_18343902325222512_607946578019983492_n.jpg" 
+          src="https://res.cloudinary.com/utnt7lxo/image/upload/f_auto,q_auto,w_600/v1787833587/SaveInta.com_726740248_18343902325222512_607946578019983492_n.jpg" 
           alt="Arte Autoral 3 - Felipe Garagem" 
+          width="250"
+          height="333"
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover grayscale contrast-125 brightness-90 hover:grayscale-0 transition-all duration-500" 
-          loading="eager"
           referrerPolicy="no-referrer"
         />
       </div>
       <div ref={img4Ref} className="absolute w-[30vw] sm:w-[24vw] max-w-[290px] aspect-[4/5] bg-zinc-900 border border-gold/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden rounded-sm opacity-55 hover:opacity-90 transition-opacity z-0">
         <img 
-          src="https://res.cloudinary.com/utnt7lxo/image/upload/v1787833586/SaveInta.com_724143105_18342891115222512_4299431308795477052_n.jpg" 
+          src="https://res.cloudinary.com/utnt7lxo/image/upload/f_auto,q_auto,w_600/v1787833586/SaveInta.com_724143105_18342891115222512_4299431308795477052_n.jpg" 
           alt="Arte Autoral 4 - Felipe Garagem" 
+          width="290"
+          height="362"
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover grayscale contrast-125 brightness-90 hover:grayscale-0 transition-all duration-500" 
-          loading="eager"
           referrerPolicy="no-referrer"
         />
       </div>

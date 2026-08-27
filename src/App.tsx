@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, lazy, Suspense } from 'react';
 import Lenis from 'lenis';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
@@ -12,10 +12,16 @@ import { BudgetForm } from './components/BudgetForm';
 import { LocationAndStay } from './components/LocationAndStay';
 import { Footer } from './components/Footer';
 import { CookieConsent } from './components/CookieConsent';
-import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
-import { TestimonialsFullscreen } from './components/TestimonialsFullscreen';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+// Lazy load heavy modal overlays to minimize initial JavaScript bundle size
+const PrivacyPolicyModal = lazy(() => 
+  import('./components/PrivacyPolicyModal').then(m => ({ default: m.PrivacyPolicyModal }))
+);
+const TestimonialsFullscreen = lazy(() => 
+  import('./components/TestimonialsFullscreen').then(m => ({ default: m.TestimonialsFullscreen }))
+);
 
 export default function App() {
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
@@ -135,10 +141,12 @@ export default function App() {
       
       {/* Testimonials Fullscreen Overlay */}
       {isTestimonialsOpen && (
-        <TestimonialsFullscreen 
-          onClose={handleCloseTestimonials} 
-          onOpenBudget={handleOpenBudgetFromTestimonials}
-        />
+        <Suspense fallback={null}>
+          <TestimonialsFullscreen 
+            onClose={handleCloseTestimonials} 
+            onOpenBudget={handleOpenBudgetFromTestimonials}
+          />
+        </Suspense>
       )}
 
       <main>
@@ -161,10 +169,12 @@ export default function App() {
       
       {/* LGPD Cookie Consent Banner & Privacy Modal */}
       <CookieConsent onOpenPrivacyPolicy={() => setIsPrivacyModalOpen(true)} />
-      <PrivacyPolicyModal 
-        isOpen={isPrivacyModalOpen} 
-        onClose={() => setIsPrivacyModalOpen(false)} 
-      />
+      <Suspense fallback={null}>
+        <PrivacyPolicyModal 
+          isOpen={isPrivacyModalOpen} 
+          onClose={() => setIsPrivacyModalOpen(false)} 
+        />
+      </Suspense>
     </div>
   );
 }

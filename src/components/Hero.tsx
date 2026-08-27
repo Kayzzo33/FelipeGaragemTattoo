@@ -109,8 +109,12 @@ export function Hero() {
         
         <div className="image-placeholder img-mobile-extra overflow-hidden border-none bg-transparent">
             <img 
-              src="https://res.cloudinary.com/utnt7lxo/image/upload/v1787832256/%EF%B8%8FSHOFS_PHOTOGRAPHER_ENSAIO_CORPORATIVO_17__1_Original.jpg" 
+              src="https://res.cloudinary.com/utnt7lxo/image/upload/f_auto,q_auto,w_800/v1787832256/%EF%B8%8FSHOFS_PHOTOGRAPHER_ENSAIO_CORPORATIVO_17__1_Original.jpg" 
               alt="Felipe Garagem" 
+              width="400"
+              height="600"
+              loading="eager"
+              decoding="async"
               className="w-full h-full object-cover grayscale opacity-90" 
               referrerPolicy="no-referrer"
             />
@@ -118,8 +122,12 @@ export function Hero() {
 
         <div className="image-placeholder img-left overflow-hidden border-none bg-transparent">
             <img 
-              src="https://res.cloudinary.com/utnt7lxo/image/upload/v1787832254/IMG_1793.jpg" 
+              src="https://res.cloudinary.com/utnt7lxo/image/upload/f_auto,q_auto,w_800/v1787832254/IMG_1793.jpg" 
               alt="Tattoo 1" 
+              width="400"
+              height="533"
+              loading="eager"
+              decoding="async"
               className="w-full h-full object-cover" 
               referrerPolicy="no-referrer"
             />
@@ -127,8 +135,12 @@ export function Hero() {
 
         <div className="image-placeholder img-right overflow-hidden border-none bg-transparent">
             <img 
-              src="https://res.cloudinary.com/utnt7lxo/image/upload/v1787832834/%EF%B8%8FSHOFS_PHOTOGRAPHER_ENSAIO_CORPORATIVO_3__1_Original.jpg" 
+              src="https://res.cloudinary.com/utnt7lxo/image/upload/f_auto,q_auto,w_800/v1787832834/%EF%B8%8FSHOFS_PHOTOGRAPHER_ENSAIO_CORPORATIVO_3__1_Original.jpg" 
               alt="Tattoo 2" 
+              width="450"
+              height="506"
+              loading="eager"
+              decoding="async"
               className="w-full h-full object-cover" 
               referrerPolicy="no-referrer"
             />

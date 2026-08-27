@@ -9,37 +9,37 @@ interface Image {
 
 // 7 featured images strictly for the Zoom Parallax scroll animation
 const parallaxFeaturedImages: Image[] = [
-  { src: 'https://lh3.googleusercontent.com/d/19HTOZIBjfMKO4D48T5pwD5rabkDFqRWt', alt: 'Tatuagem Autoral Felipe Garagem 1' },
-  { src: 'https://lh3.googleusercontent.com/d/1l1EVBsBdP9l2T5j8fk7OAmaBfmegga4P', alt: 'Tatuagem Autoral Felipe Garagem 2' },
-  { src: 'https://lh3.googleusercontent.com/d/1k_mi28dypIf50rON5H7cawet7Xp-LvdL', alt: 'Tatuagem Autoral Felipe Garagem 3' },
-  { src: 'https://lh3.googleusercontent.com/d/1OIgeefreNRXoXdwZN-o8w_8Fzp_mXuAU', alt: 'Tatuagem Autoral Felipe Garagem 4' },
-  { src: 'https://lh3.googleusercontent.com/d/18Mx99tKzCwJoKFUry3-t3_BrBSBVuvJK', alt: 'Tatuagem Autoral Felipe Garagem 5' },
-  { src: 'https://lh3.googleusercontent.com/d/11SIWqc_Nl8jL2t-pA_jEQ_dN1g9Ew-KA', alt: 'Tatuagem Autoral Felipe Garagem 6' },
-  { src: 'https://lh3.googleusercontent.com/d/17xp-pdpOwrDLqRTl96BrCW_QXhpFLsVB', alt: 'Tatuagem Autoral Felipe Garagem 7' },
+  { src: 'https://lh3.googleusercontent.com/d/19HTOZIBjfMKO4D48T5pwD5rabkDFqRWt=w800', alt: 'Tatuagem Autoral Felipe Garagem 1' },
+  { src: 'https://lh3.googleusercontent.com/d/1l1EVBsBdP9l2T5j8fk7OAmaBfmegga4P=w800', alt: 'Tatuagem Autoral Felipe Garagem 2' },
+  { src: 'https://lh3.googleusercontent.com/d/1k_mi28dypIf50rON5H7cawet7Xp-LvdL=w800', alt: 'Tatuagem Autoral Felipe Garagem 3' },
+  { src: 'https://lh3.googleusercontent.com/d/1OIgeefreNRXoXdwZN-o8w_8Fzp_mXuAU=w800', alt: 'Tatuagem Autoral Felipe Garagem 4' },
+  { src: 'https://lh3.googleusercontent.com/d/18Mx99tKzCwJoKFUry3-t3_BrBSBVuvJK=w800', alt: 'Tatuagem Autoral Felipe Garagem 5' },
+  { src: 'https://lh3.googleusercontent.com/d/11SIWqc_Nl8jL2t-pA_jEQ_dN1g9Ew-KA=w800', alt: 'Tatuagem Autoral Felipe Garagem 6' },
+  { src: 'https://lh3.googleusercontent.com/d/17xp-pdpOwrDLqRTl96BrCW_QXhpFLsVB=w800', alt: 'Tatuagem Autoral Felipe Garagem 7' },
 ];
 
 // All images for the full gallery below the animation
 const allGalleryImages: Image[] = [
-  { src: 'https://lh3.googleusercontent.com/d/19HTOZIBjfMKO4D48T5pwD5rabkDFqRWt', alt: 'Tatuagem Autoral Felipe Garagem 1' },
-  { src: 'https://lh3.googleusercontent.com/d/1l1EVBsBdP9l2T5j8fk7OAmaBfmegga4P', alt: 'Tatuagem Autoral Felipe Garagem 2' },
-  { src: 'https://lh3.googleusercontent.com/d/1k_mi28dypIf50rON5H7cawet7Xp-LvdL', alt: 'Tatuagem Autoral Felipe Garagem 3' },
-  { src: 'https://lh3.googleusercontent.com/d/1OIgeefreNRXoXdwZN-o8w_8Fzp_mXuAU', alt: 'Tatuagem Autoral Felipe Garagem 4' },
-  { src: 'https://lh3.googleusercontent.com/d/18Mx99tKzCwJoKFUry3-t3_BrBSBVuvJK', alt: 'Tatuagem Autoral Felipe Garagem 5' },
-  { src: 'https://lh3.googleusercontent.com/d/11SIWqc_Nl8jL2t-pA_jEQ_dN1g9Ew-KA', alt: 'Tatuagem Autoral Felipe Garagem 6' },
-  { src: 'https://lh3.googleusercontent.com/d/17xp-pdpOwrDLqRTl96BrCW_QXhpFLsVB', alt: 'Tatuagem Autoral Felipe Garagem 7' },
-  { src: 'https://lh3.googleusercontent.com/d/1Kiezu-yADC_w7Fi7tkMVQNvTFTZFlImt', alt: 'Tatuagem Autoral Felipe Garagem 8' },
-  { src: 'https://lh3.googleusercontent.com/d/1DnoZ88Aes7dpX4g-AOsw2neamPn1ph-O', alt: 'Tatuagem Autoral Felipe Garagem 9' },
-  { src: 'https://lh3.googleusercontent.com/d/1ZqLIPK_0ZR9J7pRKDFqZELoLdMmVY04K', alt: 'Tatuagem Autoral Felipe Garagem 10' },
-  { src: 'https://lh3.googleusercontent.com/d/1TTV9UxN8b1aaJqmoaTPKI5jcJSnua5vT', alt: 'Tatuagem Autoral Felipe Garagem 11' },
-  { src: 'https://lh3.googleusercontent.com/d/15dgz_AomJ8y1y3pa7_cdtim_CILD80Hq', alt: 'Tatuagem Autoral Felipe Garagem 12' },
-  { src: 'https://lh3.googleusercontent.com/d/1QCitxQY16XcqjUWuunmXS3BIVnLkIabZ', alt: 'Tatuagem Autoral Felipe Garagem 13' },
-  { src: 'https://lh3.googleusercontent.com/d/1d3kt_gn0t6VCmfJCr2Mg1ic-19XY6F2V', alt: 'Tatuagem Autoral Felipe Garagem 14' },
-  { src: 'https://res.cloudinary.com/utnt7lxo/image/upload/v1787833589/SaveInta.com_722811092_18342891163222512_8932647788294634271_n.jpg', alt: 'Tatuagem Autoral Felipe Garagem 15' },
-  { src: 'https://res.cloudinary.com/utnt7lxo/image/upload/v1787833588/SaveInta.com_722857951_18342891217222512_4495888547910363933_n.jpg', alt: 'Tatuagem Autoral Felipe Garagem 16' },
-  { src: 'https://res.cloudinary.com/utnt7lxo/image/upload/v1787833588/SaveInta.com_730833702_18344639554222512_8739277124004208338_n.jpg', alt: 'Tatuagem Autoral Felipe Garagem 17' },
-  { src: 'https://res.cloudinary.com/utnt7lxo/image/upload/v1787833587/SaveInta.com_726740248_18343902325222512_607946578019983492_n.jpg', alt: 'Tatuagem Autoral Felipe Garagem 18' },
-  { src: 'https://res.cloudinary.com/utnt7lxo/image/upload/v1787833587/SaveInta.com_726963333_18343902289222512_8569434307896407217_n.jpg', alt: 'Tatuagem Autoral Felipe Garagem 19' },
-  { src: 'https://res.cloudinary.com/utnt7lxo/image/upload/v1787833586/SaveInta.com_724143105_18342891115222512_4299431308795477052_n.jpg', alt: 'Tatuagem Autoral Felipe Garagem 20' },
+  { src: 'https://lh3.googleusercontent.com/d/19HTOZIBjfMKO4D48T5pwD5rabkDFqRWt=w800', alt: 'Tatuagem Autoral Felipe Garagem 1' },
+  { src: 'https://lh3.googleusercontent.com/d/1l1EVBsBdP9l2T5j8fk7OAmaBfmegga4P=w800', alt: 'Tatuagem Autoral Felipe Garagem 2' },
+  { src: 'https://lh3.googleusercontent.com/d/1k_mi28dypIf50rON5H7cawet7Xp-LvdL=w800', alt: 'Tatuagem Autoral Felipe Garagem 3' },
+  { src: 'https://lh3.googleusercontent.com/d/1OIgeefreNRXoXdwZN-o8w_8Fzp_mXuAU=w800', alt: 'Tatuagem Autoral Felipe Garagem 4' },
+  { src: 'https://lh3.googleusercontent.com/d/18Mx99tKzCwJoKFUry3-t3_BrBSBVuvJK=w800', alt: 'Tatuagem Autoral Felipe Garagem 5' },
+  { src: 'https://lh3.googleusercontent.com/d/11SIWqc_Nl8jL2t-pA_jEQ_dN1g9Ew-KA=w800', alt: 'Tatuagem Autoral Felipe Garagem 6' },
+  { src: 'https://lh3.googleusercontent.com/d/17xp-pdpOwrDLqRTl96BrCW_QXhpFLsVB=w800', alt: 'Tatuagem Autoral Felipe Garagem 7' },
+  { src: 'https://lh3.googleusercontent.com/d/1Kiezu-yADC_w7Fi7tkMVQNvTFTZFlImt=w800', alt: 'Tatuagem Autoral Felipe Garagem 8' },
+  { src: 'https://lh3.googleusercontent.com/d/1DnoZ88Aes7dpX4g-AOsw2neamPn1ph-O=w800', alt: 'Tatuagem Autoral Felipe Garagem 9' },
+  { src: 'https://lh3.googleusercontent.com/d/1ZqLIPK_0ZR9J7pRKDFqZELoLdMmVY04K=w800', alt: 'Tatuagem Autoral Felipe Garagem 10' },
+  { src: 'https://lh3.googleusercontent.com/d/1TTV9UxN8b1aaJqmoaTPKI5jcJSnua5vT=w800', alt: 'Tatuagem Autoral Felipe Garagem 11' },
+  { src: 'https://lh3.googleusercontent.com/d/15dgz_AomJ8y1y3pa7_cdtim_CILD80Hq=w800', alt: 'Tatuagem Autoral Felipe Garagem 12' },
+  { src: 'https://lh3.googleusercontent.com/d/1QCitxQY16XcqjUWuunmXS3BIVnLkIabZ=w800', alt: 'Tatuagem Autoral Felipe Garagem 13' },
+  { src: 'https://lh3.googleusercontent.com/d/1d3kt_gn0t6VCmfJCr2Mg1ic-19XY6F2V=w800', alt: 'Tatuagem Autoral Felipe Garagem 14' },
+  { src: 'https://res.cloudinary.com/utnt7lxo/image/upload/f_auto,q_auto,w_800/v1787833589/SaveInta.com_722811092_18342891163222512_8932647788294634271_n.jpg', alt: 'Tatuagem Autoral Felipe Garagem 15' },
+  { src: 'https://res.cloudinary.com/utnt7lxo/image/upload/f_auto,q_auto,w_800/v1787833588/SaveInta.com_722857951_18342891217222512_4495888547910363933_n.jpg', alt: 'Tatuagem Autoral Felipe Garagem 16' },
+  { src: 'https://res.cloudinary.com/utnt7lxo/image/upload/f_auto,q_auto,w_800/v1787833588/SaveInta.com_730833702_18344639554222512_8739277124004208338_n.jpg', alt: 'Tatuagem Autoral Felipe Garagem 17' },
+  { src: 'https://res.cloudinary.com/utnt7lxo/image/upload/f_auto,q_auto,w_800/v1787833587/SaveInta.com_726740248_18343902325222512_607946578019983492_n.jpg', alt: 'Tatuagem Autoral Felipe Garagem 18' },
+  { src: 'https://res.cloudinary.com/utnt7lxo/image/upload/f_auto,q_auto,w_800/v1787833587/SaveInta.com_726963333_18343902289222512_8569434307896407217_n.jpg', alt: 'Tatuagem Autoral Felipe Garagem 19' },
+  { src: 'https://res.cloudinary.com/utnt7lxo/image/upload/f_auto,q_auto,w_800/v1787833586/SaveInta.com_724143105_18342891115222512_4299431308795477052_n.jpg', alt: 'Tatuagem Autoral Felipe Garagem 20' },
 ];
 
 function ZoomParallax({ images, scrollContainer }: { images: Image[], scrollContainer: React.RefObject<HTMLDivElement> }) {
@@ -74,6 +74,8 @@ function ZoomParallax({ images, scrollContainer }: { images: Image[], scrollCont
                 <img
                   src={src || '/placeholder.svg'}
                   alt={alt || `Parallax image ${index + 1}`}
+                  loading="lazy"
+                  decoding="async"
                   className="h-full w-full object-cover"
                   referrerPolicy="no-referrer"
                 />

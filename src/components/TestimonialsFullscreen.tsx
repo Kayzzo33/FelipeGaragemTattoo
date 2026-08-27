@@ -117,7 +117,7 @@ function DriveVideoPlayer({
         poster={posterUrl}
         playsInline
         controls={isPlaying}
-        preload="auto"
+        preload="metadata"
         loop
         muted={!isPlaying}
         onPlay={() => {
