@@ -201,7 +201,7 @@ ${data.infosExtras ? `- *Extras:* ${data.infosExtras}` : ''}`;
       <section id="contact" className="py-32 bg-black px-6 md:px-12">
         <div className="max-w-2xl mx-auto text-center border border-gold/20 p-12 md:p-24 rounded-sm">
           <h2 className="text-3xl md:text-5xl font-serif text-cream mb-6">Projeto Enviado</h2>
-          <p className="text-cream/70 text-lg mb-12">Recebi sua ideia! Em até 5 dias úteis, retornarei com uma proposta. Se preferir, me chame no WhatsApp.</p>
+          <p className="text-cream/70 text-lg mb-12">Recebi sua ideia! Em até dois dias úteis, retornarei com uma proposta. Se preferir, me chame no WhatsApp.</p>
           <a href="https://wa.me/5511989719861" target="_blank" rel="noreferrer" className="inline-block text-black bg-gold px-8 py-4 rounded-full uppercase tracking-widest text-sm font-medium hover:bg-cream transition-colors">
             Falar no WhatsApp
           </a>
@@ -570,7 +570,7 @@ ${data.infosExtras ? `- *Extras:* ${data.infosExtras}` : ''}`;
                 <>ENVIAR PROJETO →</>
               )}
             </button>
-            <span className="text-cream/50 text-sm mt-6 block font-light">Retorno em até 5 dias úteis.</span>
+            <span className="text-cream/50 text-sm mt-6 block font-light">Retorno em até dois dias úteis.</span>
           </div>
           
         </form>

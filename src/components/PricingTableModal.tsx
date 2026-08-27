@@ -119,10 +119,10 @@ export function PricingTableModal({ isOpen, onClose }: PricingTableModalProps) {
             </div>
           </div>
 
-          {/* Attention Callout Box */}
+            {/* Attention Callout Box */}
           <div className="p-4 bg-zinc-100/80 rounded border-l-4 border-zinc-900 space-y-1">
             <p className="text-xs text-zinc-900 font-medium leading-relaxed">
-              <strong>Atenção:</strong> todos os trabalhos podem ser parcelados em até <strong>10x sem juros</strong>.
+              <strong>Atenção:</strong> todos os trabalhos podem ser parcelados em até <strong>10x</strong>.
             </p>
           </div>
 

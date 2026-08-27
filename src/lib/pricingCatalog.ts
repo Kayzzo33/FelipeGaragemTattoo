@@ -3,7 +3,7 @@ export const pricingCatalog = {
   ticketMedioRecente: 5500,
   condicoesPagamento: {
     aVista: '10% de desconto',
-    parcelado: 'Em até 10x sem juros no cartão',
+    parcelado: 'Em até 10x no cartão',
   },
   tabelaReferencia: [
     { item: 'Valor mínimo', valor: 'R$ 2.800' },
@@ -17,7 +17,7 @@ export const pricingCatalog = {
     umProjeto: 'O tempo médio de atendimento para 1 projeto (antebraço interno, antebraço externo, braço externo ou braço interno) é de 6 a 8 hs totais contando apresentação, pausas durante a tatuagem e pausa para o almoço.',
     doisProjetos: 'O tempo médio de atendimento para 2 projetos (fechamento de braço externo ou fechamento interno) é de 10hs totais contando apresentação, pausas durante a tatuagem e pausa para o almoço.',
     quatroProjetos: 'O tempo médio de atendimento para 4 projetos (fechamento completo de braço) serão dois dias de atendimento.',
-    parcelamento: 'Atenção: todos os trabalhos podem ser parcelados em até 10x sem juros.',
+    parcelamento: 'Atenção: todos os trabalhos podem ser parcelados em até 10x.',
   },
   porRegiao: {
     'Antebraço Interno': 2800,
@@ -44,7 +44,7 @@ export const pricingCatalog = {
     'Meio Peitoral': null,
     'Abdômen': null,
   } as Record<string, number | null>,
-  observacoes: 'Valores para execução em Atibaia-SP. Todos os trabalhos podem ser parcelados em até 10x sem juros.',
+  observacoes: 'Valores para execução em Atibaia-SP. Todos os trabalhos podem ser parcelados em até 10x.',
 };
 
 export const investmentBands = [
@@ -52,7 +52,6 @@ export const investmentBands = [
   'R$ 4.500 a R$ 6.500',
   'R$ 6.500 a R$ 8.500',
   'Acima de R$ 8.500',
-  'Prefiro entender melhor após a avaliação',
 ];
 
 export const bodyAreas = [
