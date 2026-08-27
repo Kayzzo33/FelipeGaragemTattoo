@@ -67,40 +67,40 @@ export function Hero() {
             .img-right { width: 38%; }
         }
         @media (max-width: 768px) {
-            .hero-container { min-height: 110vh; }
-            .text-felipe { top: 8%; left: 4%; font-size: 24vw; z-index: 25; }
+            .hero-container { min-height: 105vh; padding-top: 5rem; }
+            .text-felipe { top: 12%; left: 4%; font-size: 23vw; z-index: 25; }
             
             .img-mobile-extra { 
                 display: flex; 
-                top: 22%; left: 8%; width: 50%; aspect-ratio: 2 / 3; z-index: 15; 
+                top: 25%; left: 7%; width: 50%; aspect-ratio: 2 / 3; z-index: 15; 
             }
             .img-right { 
-                top: 32%; right: 6%; width: 44%; aspect-ratio: 1 / 1.1; z-index: 18; 
+                top: 35%; right: 6%; width: 44%; aspect-ratio: 1 / 1.1; z-index: 18; 
             }
             .img-left { 
-                top: 54%; left: 25%; width: 46%; aspect-ratio: 4 / 3; z-index: 16; 
+                top: 56%; left: 24%; width: 46%; aspect-ratio: 4 / 3; z-index: 16; 
             }
             
             .text-garagem { 
-                top: 68%; left: 50%; transform: translateX(-50%); font-size: 18vw; z-index: 30; 
+                top: 71%; left: 50%; transform: translateX(-50%); font-size: 18vw; z-index: 30; 
             }
         }
         @media (max-width: 480px) {
-            .hero-container { min-height: 115vh; }
-            .text-felipe { top: 8%; left: 4%; font-size: 25vw; z-index: 25; }
+            .hero-container { min-height: 108vh; padding-top: 5.5rem; }
+            .text-felipe { top: 13%; left: 4%; font-size: 24vw; z-index: 25; }
             
             .img-mobile-extra { 
-                top: 22%; left: 6%; width: 48%; aspect-ratio: 2 / 3; z-index: 15; 
+                top: 26%; left: 5%; width: 48%; aspect-ratio: 2 / 3; z-index: 15; 
             }
             .img-right { 
-                top: 32%; right: 4%; width: 46%; aspect-ratio: 1 / 1.1; z-index: 18; 
+                top: 36%; right: 4%; width: 46%; aspect-ratio: 1 / 1.1; z-index: 18; 
             }
             .img-left { 
-                top: 54%; left: 30%; width: 50%; aspect-ratio: 5 / 4; z-index: 16; 
+                top: 57%; left: 28%; width: 50%; aspect-ratio: 5 / 4; z-index: 16; 
             }
             
             .text-garagem { 
-                top: 70%; left: 50%; transform: translateX(-50%); right: auto; font-size: 19vw; z-index: 30; 
+                top: 73%; left: 50%; transform: translateX(-50%); right: auto; font-size: 19vw; z-index: 30; 
             }
         }
       `}} />
@@ -108,15 +108,30 @@ export function Hero() {
         <h1 className="font-serif hero-text text-felipe">FELIPE</h1>
         
         <div className="image-placeholder img-mobile-extra overflow-hidden border-none bg-transparent">
-            <img src="https://drive.google.com/thumbnail?sz=w1000&id=1JzMcw8v4_ca_zAGb389GXLaewK6bhVVE" alt="Felipe Garagem" className="w-full h-full object-cover grayscale opacity-90" />
+            <img 
+              src="https://res.cloudinary.com/utnt7lxo/image/upload/v1787832256/%EF%B8%8FSHOFS_PHOTOGRAPHER_ENSAIO_CORPORATIVO_17__1_Original.jpg" 
+              alt="Felipe Garagem" 
+              className="w-full h-full object-cover grayscale opacity-90" 
+              referrerPolicy="no-referrer"
+            />
         </div>
 
         <div className="image-placeholder img-left overflow-hidden border-none bg-transparent">
-            <img src="https://drive.google.com/thumbnail?sz=w1000&id=1ZqLIPK_0ZR9J7pRKDFqZELoLdMmVY04K" alt="Tattoo 1" className="w-full h-full object-cover" />
+            <img 
+              src="https://res.cloudinary.com/utnt7lxo/image/upload/v1787832254/IMG_1793.jpg" 
+              alt="Tattoo 1" 
+              className="w-full h-full object-cover" 
+              referrerPolicy="no-referrer"
+            />
         </div>
 
         <div className="image-placeholder img-right overflow-hidden border-none bg-transparent">
-            <img src="https://drive.google.com/thumbnail?sz=w1000&id=1gZfeRr3HwzlvicqKPiJJ6breEuS6fdQg" alt="Tattoo 2" className="w-full h-full object-cover" />
+            <img 
+              src="https://res.cloudinary.com/utnt7lxo/image/upload/v1787832834/%EF%B8%8FSHOFS_PHOTOGRAPHER_ENSAIO_CORPORATIVO_3__1_Original.jpg" 
+              alt="Tattoo 2" 
+              className="w-full h-full object-cover" 
+              referrerPolicy="no-referrer"
+            />
         </div>
 
         <h1 className="font-serif hero-text text-garagem">GARAGEM</h1>

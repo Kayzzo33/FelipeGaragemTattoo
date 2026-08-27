@@ -1,5 +1,7 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
+import https from 'https';
 import { createServer as createViteServer } from 'vite';
 import { Resend } from 'resend';
 
@@ -90,8 +92,12 @@ async function startServer() {
       requestHeaders['Range'] = clientRange;
     }
 
-    import('https').then((https) => {
-      const driveReq = https.get(driveUrl, { headers: requestHeaders }, (driveRes) => {
+    function proxyUrl(targetUrl: string) {
+      const driveReq = https.get(targetUrl, { headers: requestHeaders }, (driveRes) => {
+        if (driveRes.statusCode && driveRes.statusCode >= 300 && driveRes.statusCode < 400 && driveRes.headers.location) {
+          return proxyUrl(driveRes.headers.location);
+        }
+
         const responseHeaders: Record<string, string | string[] | undefined> = {
           'Content-Type': 'video/mp4',
           'Accept-Ranges': 'bytes',
@@ -115,7 +121,9 @@ async function startServer() {
           res.status(500).send('Streaming error');
         }
       });
-    });
+    }
+
+    proxyUrl(driveUrl);
   });
 
   app.post('/api/send-budget', async (req, res) => {
@@ -350,7 +358,7 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*all', (req, res) => {
+    app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }

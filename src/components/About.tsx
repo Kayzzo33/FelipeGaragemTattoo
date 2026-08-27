@@ -8,9 +8,10 @@ export function About() {
       <div className="relative w-full min-h-[80vh] flex justify-center items-center flex-col overflow-hidden mb-24 md:mb-32">
         <div className="relative w-full max-w-[450px] aspect-[3/4] z-[1]">
           <img 
-            src="https://drive.google.com/thumbnail?sz=w1000&id=1JzMcw8v4_ca_zAGb389GXLaewK6bhVVE" 
+            src="https://res.cloudinary.com/utnt7lxo/image/upload/v1787832256/%EF%B8%8FSHOFS_PHOTOGRAPHER_ENSAIO_CORPORATIVO_17__1_Original.jpg" 
             alt="Felipe Garagem" 
             className="w-full h-full object-cover grayscale" 
+            referrerPolicy="no-referrer"
           />
         </div>
         
@@ -28,8 +29,13 @@ export function About() {
           <div className="text-gold text-sm tracking-[0.2em] uppercase font-medium">
             A arte começa<br/> na escuta
           </div>
-          <div className="w-[200px] bg-[#1a1a1a] overflow-hidden relative opacity-80">
-            <img src="https://drive.google.com/thumbnail?sz=w1000&id=1HVsM9TLWmemw1BKMYrZno6viQ-zVLp4K" alt="Conteúdo abaixo" className="w-full h-auto object-cover" />
+          <div className="w-[200px] bg-[#1a1a1a] overflow-hidden relative opacity-90 border border-gold/30 rounded-sm">
+            <img 
+              src="https://res.cloudinary.com/utnt7lxo/image/upload/v1787832835/%EF%B8%8FSHOFS_PHOTOGRAPHER_ENSAIO_CORPORATIVO_2__Original.jpg" 
+              alt="Felipe Garagem - A arte começa na escuta" 
+              className="w-full h-auto object-cover grayscale hover:grayscale-0 transition-all duration-500" 
+              referrerPolicy="no-referrer"
+            />
           </div>
         </div>
         

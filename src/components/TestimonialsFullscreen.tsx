@@ -1,51 +1,45 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useScroll, useTransform, motion } from 'framer-motion';
+import { ArrowLeft, Play } from 'lucide-react';
 
-// Fontes de vídeo com streaming nativo em MP4 (Autoplay 100% funcional no scroll, sem botão do Drive):
+// Vídeos locais em alta resolução com capas de pré-visualização:
 const VIDEOS = {
   video1: {
-    id: '1hKdTUQ4Wm6n5zywo10czirNsVhS6GyyC',
     streamUrl: '/videos/video1.mp4',
-    fallbackUrl: '/api/video-stream/1hKdTUQ4Wm6n5zywo10czirNsVhS6GyyC',
+    posterUrl: '/videos/video1-poster.jpg',
     title: 'Estilo Autoral & Identidade — Thalles & Felipe',
-    duration: '1:30',
   },
   video2: {
-    id: '1NQ0OwCxJZb6fJFM1tSIDPdgCSHMLXwtj',
     streamUrl: '/videos/video2.mp4',
-    fallbackUrl: '/api/video-stream/1NQ0OwCxJZb6fJFM1tSIDPdgCSHMLXwtj',
+    posterUrl: '/videos/video2-poster.jpg',
     title: 'Amenizador 3D & Conforto Térmico',
-    duration: '1:01',
   },
   video3: {
-    id: '1dgr8-gsp2VB7SjrP3a6j13h0P7vnkb0s',
     streamUrl: '/videos/video3.mp4',
-    fallbackUrl: 'https://res.cloudinary.com/utnt7lxo/video/upload/v1787266575/395ee917-5e35-47a0-bcc8-d8cc3b9adb6c.mp4',
+    posterUrl: '/videos/video3-poster.jpg',
     title: 'Precisão, Cicatrização & Depoimento',
-    duration: '0:42',
   },
 };
 
-// Player Nativo HTML5 com Autoplay Fluido no Scroll e Controles de Áudio
-function NativeVideoPlayer({
-  streamUrl,
-  fallbackUrl,
-  isActive,
-  isMuted,
-  onToggleMute,
-  onTogglePlay,
-  duration,
-}: {
+// Player de Vídeo com Botão Play estilo Google Drive, Controles Nacionais Nativos e Autoplay Inteligente
+interface VideoPlayerProps {
   streamUrl: string;
-  fallbackUrl?: string;
+  posterUrl: string;
+  title?: string;
   isActive: boolean;
-  isMuted: boolean;
-  onToggleMute: (e: React.MouseEvent) => void;
-  onTogglePlay: (e: React.MouseEvent) => void;
-  duration?: string;
-}) {
+  onZoomAndPlay?: () => void;
+}
+
+function DriveVideoPlayer({
+  streamUrl,
+  posterUrl,
+  title,
+  isActive,
+  onZoomAndPlay,
+}: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlayingState, setIsPlayingState] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [showDrivePlayBtn, setShowDrivePlayBtn] = useState(true);
 
   // Executa play/pause quando a seção se torna ativa no scroll
   useEffect(() => {
@@ -53,94 +47,106 @@ function NativeVideoPlayer({
     if (!video) return;
 
     if (isActive) {
-      video.muted = isMuted;
+      // Inicia mutado para garantir que o navegador não bloqueie o autoplay
+      video.muted = true;
       const playPromise = video.play();
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
-            setIsPlayingState(true);
+            setIsPlaying(true);
+            setShowDrivePlayBtn(false);
           })
-          .catch(() => {
-            // Se o navegador bloquear áudio no autoplay, muta e toca imediatamente
-            video.muted = true;
-            video.play().then(() => setIsPlayingState(true)).catch(() => {});
+          .catch((err) => {
+            console.warn('Autoplay bloqueado pelo navegador, aguardando clique do usuário:', err);
+            setIsPlaying(false);
+            setShowDrivePlayBtn(true);
           });
       }
     } else {
       video.pause();
-      setIsPlayingState(false);
+      setIsPlaying(false);
+      setShowDrivePlayBtn(true);
     }
-  }, [isActive, isMuted]);
+  }, [isActive]);
 
-  // Atualiza áudio em tempo real
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = isMuted;
+  const handlePlayClick = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
     }
-  }, [isMuted]);
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Se estiver em miniatura, avança a animação para tela cheia
+    if (onZoomAndPlay) {
+      onZoomAndPlay();
+    }
+
+    // Clique direto do usuário desbloqueia áudio
+    video.muted = false;
+    const promise = video.play();
+    if (promise !== undefined) {
+      promise
+        .then(() => {
+          setIsPlaying(true);
+          setShowDrivePlayBtn(false);
+        })
+        .catch((err) => {
+          console.warn('Erro ao reproduzir com som, tentando muted:', err);
+          video.muted = true;
+          video.play().then(() => {
+            setIsPlaying(true);
+            setShowDrivePlayBtn(false);
+          });
+        });
+    }
+  };
 
   return (
-    <div className="relative w-full h-full bg-zinc-950 flex items-center justify-center overflow-hidden select-none group/player">
+    <div 
+      className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden select-none group cursor-pointer"
+      onClick={() => {
+        if (!isPlaying) {
+          handlePlayClick();
+        }
+      }}
+    >
+      {/* Elemento de Vídeo HTML5 com controles nativos ao reproduzir */}
       <video
         ref={videoRef}
+        src={streamUrl}
+        poster={posterUrl}
         playsInline
-        muted={isMuted}
-        loop
+        controls={isPlaying}
         preload="auto"
-        className="w-full h-full object-cover cursor-pointer"
-        onClick={onTogglePlay}
-      >
-        <source src={streamUrl} type="video/mp4" />
-        {fallbackUrl && <source src={fallbackUrl} type="video/mp4" />}
-      </video>
+        loop
+        muted={!isPlaying}
+        onPlay={() => {
+          setIsPlaying(true);
+          setShowDrivePlayBtn(false);
+        }}
+        onPause={() => {
+          setIsPlaying(false);
+          setShowDrivePlayBtn(true);
+        }}
+        className="w-full h-full object-contain bg-black relative z-10"
+      />
 
-      {/* Botões Flutuantes no Canto Inferior Direito (Apenas os nossos controles elegantes) */}
-      <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-30 flex items-center gap-2 pointer-events-auto">
-        
-        {/* Botão de Play/Pausa */}
-        <button
-          onClick={onTogglePlay}
-          className="flex items-center gap-2 bg-black/85 hover:bg-black backdrop-blur-md border border-gold/40 hover:border-gold px-3 py-1.5 sm:px-4 sm:py-2 rounded-full transition-all duration-300 shadow-2xl cursor-pointer"
+      {/* Botão de Play Estilo Google Drive (Central, translúcido e elegante) */}
+      {showDrivePlayBtn && (
+        <div 
+          onClick={handlePlayClick}
+          className="absolute inset-0 z-20 flex items-center justify-center bg-black/35 hover:bg-black/20 backdrop-blur-[1px] transition-colors cursor-pointer"
         >
-          <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gold/20 flex items-center justify-center text-gold">
-            {isActive && isPlayingState ? (
-              <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
-                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-              </svg>
-            ) : (
-              <svg className="w-2.5 h-2.5 fill-current translate-x-0.5" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            )}
-          </div>
-          <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.18em] text-cream">
-            {isActive && isPlayingState ? 'Pausar' : 'Reproduzir'}
-          </span>
-          {duration && (
-            <span className="hidden sm:inline text-[9px] font-mono text-cream/40">
-              • {duration}
-            </span>
-          )}
-        </button>
-
-        {/* Botão de Som */}
-        <button
-          onClick={onToggleMute}
-          className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/85 hover:bg-black backdrop-blur-md border border-white/20 hover:border-gold flex items-center justify-center text-cream hover:text-gold transition-colors cursor-pointer"
-          title={isMuted ? 'Ativar Som' : 'Silenciar'}
-        >
-          {isMuted ? (
-            <svg className="w-3.5 h-3.5 fill-current text-cream/60" viewBox="0 0 24 24">
-              <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
-            </svg>
-          ) : (
-            <svg className="w-3.5 h-3.5 fill-current text-gold" viewBox="0 0 24 24">
-              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
-            </svg>
-          )}
-        </button>
-
-      </div>
+          <button
+            type="button"
+            onClick={handlePlayClick}
+            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-black/75 hover:bg-black/90 border border-white/30 hover:border-gold text-white hover:text-gold flex items-center justify-center shadow-[0_10px_35px_rgba(0,0,0,0.8)] backdrop-blur-md transform transition-all duration-300 hover:scale-110 active:scale-95 group/btn cursor-pointer"
+            aria-label={`Reproduzir ${title || 'vídeo'}`}
+          >
+            <Play size={28} className="fill-current translate-x-0.5 text-cream group-hover/btn:text-gold transition-colors" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -174,9 +180,8 @@ function ScrollBlurText({
 }
 
 // =========================================================================
-// SEÇÃO 1: THALLES & FELIPE (Link 1 - 1m 30s)
-// Miniatura no início -> Expande para Fullscreen no scroll -> Autoplay automático ao chegar em tela cheia!
-// Clicar em Play de início rola e reproduz com áudio
+// SEÇÃO 1: THALLES & FELIPE
+// Miniatura -> Zoom tela cheia no scroll -> Autoplay automático
 // =========================================================================
 function HeroScrollSection({ 
   scrollContainer,
@@ -188,7 +193,6 @@ function HeroScrollSection({
   onSetActiveVideo: (key: string | null) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isMuted, setIsMuted] = useState(true);
   const isActive = activeVideoKey === 'video1';
 
   const { scrollYProgress } = useScroll({
@@ -197,14 +201,14 @@ function HeroScrollSection({
     offset: ['start start', 'end end'],
   });
 
-  // Autoplay inteligente no scroll ao se aproximar de tela cheia
+  // Autoplay ao chegar perto de zoom e em zoom (entre 18% e 88% do scroll)
   useEffect(() => {
     const unsubscribe = scrollYProgress.on('change', (latest) => {
-      if (latest >= 0.45 && latest <= 0.95) {
+      if (latest >= 0.18 && latest <= 0.88) {
         if (activeVideoKey !== 'video1') {
           onSetActiveVideo('video1');
         }
-      } else if (latest < 0.15 || latest > 0.98) {
+      } else if (latest < 0.08 || latest > 0.95) {
         if (activeVideoKey === 'video1') {
           onSetActiveVideo(null);
         }
@@ -213,34 +217,24 @@ function HeroScrollSection({
     return () => unsubscribe();
   }, [scrollYProgress, activeVideoKey, onSetActiveVideo]);
 
-  // Se clicar em play de início, rola suavemente para o enquadramento de tela cheia e reproduz
-  const handleTogglePlay = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!isActive) {
-      onSetActiveVideo('video1');
-      if (scrollContainer.current && containerRef.current) {
-        const top = containerRef.current.offsetTop + window.innerHeight * 0.6;
-        scrollContainer.current.scrollTo({ top, behavior: 'smooth' });
-      }
-    } else {
-      onSetActiveVideo(null);
+  // Se o usuário clicar no play antes de rolar, avança a animação para tela cheia
+  const handleZoomAndPlay = () => {
+    onSetActiveVideo('video1');
+    if (scrollContainer.current && containerRef.current) {
+      const targetScroll = containerRef.current.offsetTop + containerRef.current.offsetHeight * 0.45;
+      scrollContainer.current.scrollTo({ top: targetScroll, behavior: 'smooth' });
     }
-  };
-
-  const handleToggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsMuted(!isMuted);
   };
 
   const titleY = useTransform(scrollYProgress, [0, 0.4], [0, -60]);
   const titleOpacity = useTransform(scrollYProgress, [0, 0.35], [1, 0]);
 
   // Transição fluida de miniatura para tela cheia
-  const videoInsetTop = useTransform(scrollYProgress, [0, 0.6], ['36%', '0%']);
-  const videoInsetLeft = useTransform(scrollYProgress, [0, 0.6], ['46%', '0%']);
-  const videoInsetRight = useTransform(scrollYProgress, [0, 0.6], ['4%', '0%']);
-  const videoInsetBottom = useTransform(scrollYProgress, [0, 0.6], ['6%', '0%']);
-  const videoRadius = useTransform(scrollYProgress, [0, 0.6], ['16px', '0px']);
+  const videoInsetTop = useTransform(scrollYProgress, [0, 0.55], ['36%', '0%']);
+  const videoInsetLeft = useTransform(scrollYProgress, [0, 0.55], ['46%', '0%']);
+  const videoInsetRight = useTransform(scrollYProgress, [0, 0.55], ['4%', '0%']);
+  const videoInsetBottom = useTransform(scrollYProgress, [0, 0.55], ['6%', '0%']);
+  const videoRadius = useTransform(scrollYProgress, [0, 0.55], ['16px', '0px']);
 
   return (
     <div ref={containerRef} className="relative h-[220vh] w-full">
@@ -268,7 +262,7 @@ function HeroScrollSection({
           </p>
         </motion.div>
 
-        {/* Container do Vídeo que expande de forma fluida até tela cheia */}
+        {/* Container do Vídeo que expande até tela cheia */}
         <motion.div 
           style={{
             top: videoInsetTop,
@@ -279,14 +273,12 @@ function HeroScrollSection({
           }}
           className="absolute z-20 overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.9)] bg-zinc-950 border border-white/10"
         >
-          <NativeVideoPlayer
+          <DriveVideoPlayer
             streamUrl={VIDEOS.video1.streamUrl}
-            fallbackUrl={VIDEOS.video1.fallbackUrl}
+            posterUrl={VIDEOS.video1.posterUrl}
+            title={VIDEOS.video1.title}
             isActive={isActive}
-            isMuted={isMuted}
-            duration={VIDEOS.video1.duration}
-            onTogglePlay={handleTogglePlay}
-            onToggleMute={handleToggleMute}
+            onZoomAndPlay={handleZoomAndPlay}
           />
         </motion.div>
 
@@ -296,12 +288,8 @@ function HeroScrollSection({
 }
 
 // =========================================================================
-// SEÇÃO 2: AMENIZADOR 3D (Link 2 - 1m 01s)
-// IDÊNTICO ÀS SUAS REFERÊNCIAS:
-// - Centro exato sem desvio: Ancorado em (50%, 50%)
-// - Textos responsivos nunca cortam em telas menores ("SESSÃO" na esquerda, "CONFORTÁVEL" na direita)
-// - Conforme o scroll desce: As palavras se afastam e somem (fade out)
-// - O vídeo cresce a partir do centro absoluto e REPRODUZ AUTOMATICAMENTE no zoom!
+// SEÇÃO 2: AMENIZADOR 3D
+// Centro -> Textos se afastam -> Vídeo expande em zoom -> Autoplay
 // =========================================================================
 function SplitScrollSection({ 
   scrollContainer,
@@ -313,7 +301,6 @@ function SplitScrollSection({
   onSetActiveVideo: (key: string | null) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isMuted, setIsMuted] = useState(true);
   const isActive = activeVideoKey === 'video2';
 
   const { scrollYProgress } = useScroll({
@@ -322,14 +309,14 @@ function SplitScrollSection({
     offset: ['start start', 'end end'],
   });
 
-  // Autoplay quando o vídeo cresce na seção
+  // Autoplay quando o vídeo cresce em zoom
   useEffect(() => {
     const unsubscribe = scrollYProgress.on('change', (latest) => {
-      if (latest >= 0.35 && latest <= 0.95) {
+      if (latest >= 0.18 && latest <= 0.88) {
         if (activeVideoKey !== 'video2') {
           onSetActiveVideo('video2');
         }
-      } else if (latest < 0.15 || latest > 0.98) {
+      } else if (latest < 0.08 || latest > 0.95) {
         if (activeVideoKey === 'video2') {
           onSetActiveVideo(null);
         }
@@ -338,28 +325,25 @@ function SplitScrollSection({
     return () => unsubscribe();
   }, [scrollYProgress, activeVideoKey, onSetActiveVideo]);
 
-  const handleTogglePlay = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onSetActiveVideo(isActive ? null : 'video2');
+  // Se o usuário clicar no play antes de rolar, avança a animação para tela cheia
+  const handleZoomAndPlay = () => {
+    onSetActiveVideo('video2');
+    if (scrollContainer.current && containerRef.current) {
+      const targetScroll = containerRef.current.offsetTop + containerRef.current.offsetHeight * 0.45;
+      scrollContainer.current.scrollTo({ top: targetScroll, behavior: 'smooth' });
+    }
   };
 
-  const handleToggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsMuted(!isMuted);
-  };
-
-  // Animação das palavras laterais:
-  // "SESSÃO" à esquerda: afasta para a esquerda e some (opacity: 0)
-  const leftTextX = useTransform(scrollYProgress, [0, 0.40], [0, -100]);
+  // Animação das palavras laterais
+  const leftTextX = useTransform(scrollYProgress, [0, 0.40], [0, -140]);
   const leftTextOpacity = useTransform(scrollYProgress, [0, 0.30], [1, 0]);
 
-  // "CONFORTÁVEL" à direita: afasta para a direita e some (opacity: 0)
-  const rightTextX = useTransform(scrollYProgress, [0, 0.40], [0, 100]);
+  const rightTextX = useTransform(scrollYProgress, [0, 0.40], [0, 140]);
   const rightTextOpacity = useTransform(scrollYProgress, [0, 0.30], [1, 0]);
 
-  // Vídeo no centro: Inicia compacto e cresce suavemente a partir do centro (origin-center)
-  const videoWidth = useTransform(scrollYProgress, [0, 0.55], ['min(290px, 38vw)', 'min(820px, 86vw)']);
-  const videoHeight = useTransform(scrollYProgress, [0, 0.55], ['min(190px, 26vh)', 'min(480px, 56vh)']);
+  // Vídeo no centro: Inicia compacto e cresce suavemente até proporção vertical sem cortar o rosto
+  const videoWidth = useTransform(scrollYProgress, [0, 0.55], ['min(240px, 34vw)', 'min(450px, 92vw)']);
+  const videoHeight = useTransform(scrollYProgress, [0, 0.55], ['min(155px, 22vh)', 'min(780px, 80vh)']);
   const videoRadius = useTransform(scrollYProgress, [0, 0.55], ['14px', '20px']);
 
   return (
@@ -373,35 +357,37 @@ function SplitScrollSection({
           </span>
         </div>
 
-        {/* Camada de Textos Laterais Perfeitamente Alinhados à Miniatura */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-10 w-full max-w-5xl mx-auto px-3 sm:px-6 flex items-center justify-between pointer-events-none select-none">
-          
-          {/* Palavra à Esquerda: "SESSÃO" */}
-          <motion.div
-            style={{ x: leftTextX, opacity: leftTextOpacity }}
-            className="flex-1 text-right pr-3 sm:pr-5 md:pr-8"
-          >
-            <span className="text-xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-serif text-cream uppercase font-light tracking-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)] whitespace-nowrap">
-              Sessão
-            </span>
-          </motion.div>
+        {/* Camada de Textos Laterais com Espaçamento Rigorosamente Idêntico */}
+        <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none select-none px-4 sm:px-8">
+          <div className="flex items-center w-full max-w-6xl">
+            
+            {/* Palavra à Esquerda: "SESSÃO" (Coluna esquerda de tamanho idêntico) */}
+            <motion.div
+              style={{ x: leftTextX, opacity: leftTextOpacity }}
+              className="flex-1 basis-0 min-w-0 text-right pr-4 sm:pr-8 md:pr-10"
+            >
+              <span className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-serif text-cream uppercase font-light tracking-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)] whitespace-nowrap inline-block">
+                Sessão
+              </span>
+            </motion.div>
 
-          {/* Espaço reservado central proporcional à miniatura */}
-          <div className="shrink-0 w-[min(290px,38vw)]" />
+            {/* Espaço reservado central com a largura exata da miniatura inicial */}
+            <div className="shrink-0 w-[min(240px,34vw)]" />
 
-          {/* Palavra à Direita: "CONFORTÁVEL" */}
-          <motion.div
-            style={{ x: rightTextX, opacity: rightTextOpacity }}
-            className="flex-1 text-left pl-3 sm:pl-5 md:pl-8"
-          >
-            <span className="text-xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-serif text-gold italic uppercase font-light tracking-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)] whitespace-nowrap">
-              Confortável
-            </span>
-          </motion.div>
+            {/* Palavra à Direita: "CONFORTÁVEL" (Coluna direita de tamanho idêntico) */}
+            <motion.div
+              style={{ x: rightTextX, opacity: rightTextOpacity }}
+              className="flex-1 basis-0 min-w-0 text-left pl-4 sm:pl-8 md:pl-10"
+            >
+              <span className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-serif text-gold italic uppercase font-light tracking-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)] whitespace-nowrap inline-block">
+                Confortável
+              </span>
+            </motion.div>
 
+          </div>
         </div>
 
-        {/* Card do Vídeo Central: ANCORADO NO CENTRO EXATO (origin-center, sem deslocamento) */}
+        {/* Card do Vídeo Central */}
         <motion.div
           style={{
             width: videoWidth,
@@ -410,14 +396,12 @@ function SplitScrollSection({
           }}
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.95)] bg-zinc-950 border border-gold/30 flex items-center justify-center origin-center"
         >
-          <NativeVideoPlayer
+          <DriveVideoPlayer
             streamUrl={VIDEOS.video2.streamUrl}
-            fallbackUrl={VIDEOS.video2.fallbackUrl}
+            posterUrl={VIDEOS.video2.posterUrl}
+            title={VIDEOS.video2.title}
             isActive={isActive}
-            isMuted={isMuted}
-            duration={VIDEOS.video2.duration}
-            onTogglePlay={handleTogglePlay}
-            onToggleMute={handleToggleMute}
+            onZoomAndPlay={handleZoomAndPlay}
           />
         </motion.div>
 
@@ -434,9 +418,8 @@ function SplitScrollSection({
 }
 
 // =========================================================================
-// SEÇÃO 3: CICATRIZAÇÃO & RESULTADO (Link 3 - 42s)
-// - Expande suavemente da direita até cobrir a tela sem zoom exagerado
-// - REPRODUZ AUTOMATICAMENTE no scroll ao expandir!
+// SEÇÃO 3: CICATRIZAÇÃO & RESULTADO
+// Expande da lateral cobrindo a tela -> Autoplay no scroll
 // =========================================================================
 function WipeScrollSection({ 
   scrollContainer,
@@ -448,7 +431,6 @@ function WipeScrollSection({
   onSetActiveVideo: (key: string | null) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isMuted, setIsMuted] = useState(true);
   const isActive = activeVideoKey === 'video3';
 
   const { scrollYProgress } = useScroll({
@@ -457,14 +439,14 @@ function WipeScrollSection({
     offset: ['start start', 'end end'],
   });
 
-  // Autoplay ao expandir o vídeo na Seção 3
+  // Autoplay ao expandir o vídeo
   useEffect(() => {
     const unsubscribe = scrollYProgress.on('change', (latest) => {
-      if (latest >= 0.40 && latest <= 0.95) {
+      if (latest >= 0.18 && latest <= 0.88) {
         if (activeVideoKey !== 'video3') {
           onSetActiveVideo('video3');
         }
-      } else if (latest < 0.15 || latest > 0.98) {
+      } else if (latest < 0.08 || latest > 0.95) {
         if (activeVideoKey === 'video3') {
           onSetActiveVideo(null);
         }
@@ -473,25 +455,24 @@ function WipeScrollSection({
     return () => unsubscribe();
   }, [scrollYProgress, activeVideoKey, onSetActiveVideo]);
 
-  const handleTogglePlay = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onSetActiveVideo(isActive ? null : 'video3');
-  };
-
-  const handleToggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsMuted(!isMuted);
+  // Se o usuário clicar no play antes de rolar, avança a animação para tela cheia
+  const handleZoomAndPlay = () => {
+    onSetActiveVideo('video3');
+    if (scrollContainer.current && containerRef.current) {
+      const targetScroll = containerRef.current.offsetTop + containerRef.current.offsetHeight * 0.45;
+      scrollContainer.current.scrollTo({ top: targetScroll, behavior: 'smooth' });
+    }
   };
 
   // Texto editorial no lado esquerdo
   const textOpacity = useTransform(scrollYProgress, [0, 0.35], [1, 0]);
 
-  // Transição do vídeo da lateral direita para tela cheia
-  const videoInsetTop = useTransform(scrollYProgress, [0, 0.6], ['15%', '0%']);
-  const videoInsetLeft = useTransform(scrollYProgress, [0, 0.6], ['50%', '0%']);
-  const videoInsetRight = useTransform(scrollYProgress, [0, 0.6], ['5%', '0%']);
-  const videoInsetBottom = useTransform(scrollYProgress, [0, 0.6], ['15%', '0%']);
-  const videoRadius = useTransform(scrollYProgress, [0, 0.6], ['16px', '0px']);
+  // Transição do vídeo da lateral para tela cheia
+  const videoInsetTop = useTransform(scrollYProgress, [0, 0.55], ['15%', '0%']);
+  const videoInsetLeft = useTransform(scrollYProgress, [0, 0.55], ['50%', '0%']);
+  const videoInsetRight = useTransform(scrollYProgress, [0, 0.55], ['5%', '0%']);
+  const videoInsetBottom = useTransform(scrollYProgress, [0, 0.55], ['15%', '0%']);
+  const videoRadius = useTransform(scrollYProgress, [0, 0.55], ['16px', '0px']);
 
   return (
     <div ref={containerRef} className="relative h-[220vh] w-full">
@@ -514,7 +495,7 @@ function WipeScrollSection({
           </p>
         </motion.div>
 
-        {/* Lado Direito: Vídeo que expande até cobrir a tela e reproduz sozinho */}
+        {/* Lado Direito: Vídeo que expande até cobrir a tela */}
         <motion.div 
           style={{ 
             top: videoInsetTop,
@@ -525,14 +506,12 @@ function WipeScrollSection({
           }}
           className="absolute z-20 overflow-hidden bg-zinc-950 border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.9)] flex items-center justify-center"
         >
-          <NativeVideoPlayer
+          <DriveVideoPlayer
             streamUrl={VIDEOS.video3.streamUrl}
-            fallbackUrl={VIDEOS.video3.fallbackUrl}
+            posterUrl={VIDEOS.video3.posterUrl}
+            title={VIDEOS.video3.title}
             isActive={isActive}
-            isMuted={isMuted}
-            duration={VIDEOS.video3.duration}
-            onTogglePlay={handleTogglePlay}
-            onToggleMute={handleToggleMute}
+            onZoomAndPlay={handleZoomAndPlay}
           />
         </motion.div>
 
@@ -542,7 +521,7 @@ function WipeScrollSection({
 }
 
 // =========================================================================
-// COMPONENTE PRINCIPAL (OVERLAY FULLSCREEN)
+// COMPONENTE PRINCIPAL (OVERLAY FULLSCREEN DE DEPOIMENTOS)
 // =========================================================================
 interface TestimonialsFullscreenProps {
   onClose: () => void;
@@ -551,7 +530,7 @@ interface TestimonialsFullscreenProps {
 
 export function TestimonialsFullscreen({ onClose, onOpenBudget }: TestimonialsFullscreenProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [activeVideoKey, setActiveVideoKey] = useState<string | null>(null);
+  const [activeVideoKey, setActiveVideoKey] = useState<string | null>('video1');
 
   useEffect(() => {
     const originalStyle = window.getComputedStyle(document.body).overflow;
@@ -582,23 +561,24 @@ export function TestimonialsFullscreen({ onClose, onOpenBudget }: TestimonialsFu
       data-lenis-prevent="true"
       className="fixed inset-0 z-[100] bg-black text-cream font-sans overflow-y-auto overflow-x-hidden selection:bg-gold selection:text-black"
     >
-      {/* 1 ÚNICO BOTÃO NO TOPO (FECHAR ✕) */}
+      {/* BOTÃO NO TOPO: "VOLTAR" */}
       <button
         onClick={handleCloseModal}
-        className="fixed top-6 right-6 md:top-8 md:right-10 z-[120] text-xs font-mono uppercase tracking-[0.25em] text-cream/80 hover:text-gold transition-colors flex items-center gap-2.5 bg-black/85 px-5 py-2.5 rounded-full border border-white/15 backdrop-blur-md cursor-pointer hover:border-gold/50 shadow-2xl"
+        className="fixed top-5 right-5 sm:top-6 sm:right-8 md:top-8 md:right-10 z-[120] text-xs font-mono uppercase tracking-[0.2em] text-cream hover:text-gold transition-all flex items-center gap-2 bg-black/90 hover:bg-black px-4 py-2.5 sm:px-5 sm:py-2.5 rounded-full border border-gold/40 backdrop-blur-md cursor-pointer shadow-[0_0_20px_rgba(0,0,0,0.8)] active:scale-95"
+        title="Voltar para a página principal"
       >
-        <span>Fechar</span>
-        <span className="text-sm">✕</span>
+        <ArrowLeft size={14} className="text-gold" />
+        <span className="font-semibold">Voltar</span>
       </button>
 
-      {/* SEÇÃO 1: THALLES + FELIPE (Link 1 - 1m 30s) */}
+      {/* SEÇÃO 1: THALLES + FELIPE */}
       <HeroScrollSection 
         scrollContainer={scrollRef} 
         activeVideoKey={activeVideoKey}
         onSetActiveVideo={setActiveVideoKey}
       />
 
-      {/* Textos Intermediários Soltos na Tela */}
+      {/* Textos Intermediários */}
       <div className="py-24 md:py-36 px-6 md:px-14 max-w-4xl mx-auto space-y-10 text-center">
         <ScrollBlurText 
           scrollContainer={scrollRef}
@@ -613,7 +593,7 @@ export function TestimonialsFullscreen({ onClose, onOpenBudget }: TestimonialsFu
         />
       </div>
 
-      {/* SEÇÃO 2: AMENIZADOR 3D (Link 2 - 1m 01s) */}
+      {/* SEÇÃO 2: AMENIZADOR 3D */}
       <SplitScrollSection 
         scrollContainer={scrollRef} 
         activeVideoKey={activeVideoKey}
@@ -632,7 +612,7 @@ export function TestimonialsFullscreen({ onClose, onOpenBudget }: TestimonialsFu
         </span>
       </div>
 
-      {/* SEÇÃO 3: CICATRIZAÇÃO & RESULTADO (Link 3 - 42s) */}
+      {/* SEÇÃO 3: CICATRIZAÇÃO & RESULTADO */}
       <WipeScrollSection 
         scrollContainer={scrollRef} 
         activeVideoKey={activeVideoKey}
@@ -662,9 +642,10 @@ export function TestimonialsFullscreen({ onClose, onOpenBudget }: TestimonialsFu
 
         <button 
           onClick={handleCloseModal}
-          className="text-xs uppercase font-mono tracking-[0.25em] text-cream/40 hover:text-cream transition-colors pt-6 cursor-pointer"
+          className="text-xs uppercase font-mono tracking-[0.25em] text-cream/40 hover:text-cream transition-colors pt-6 cursor-pointer flex items-center gap-1.5"
         >
-          Voltar à Página Principal
+          <span>←</span>
+          <span>Voltar à Página Principal</span>
         </button>
 
       </section>
@@ -672,5 +653,3 @@ export function TestimonialsFullscreen({ onClose, onOpenBudget }: TestimonialsFu
     </div>
   );
 }
-
-

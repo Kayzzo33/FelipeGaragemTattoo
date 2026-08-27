@@ -9,6 +9,7 @@ import { PinnedScroll } from './components/PinnedScroll';
 import { Differentials } from './components/Differentials';
 import { FAQ } from './components/FAQ';
 import { BudgetForm } from './components/BudgetForm';
+import { LocationAndStay } from './components/LocationAndStay';
 import { Footer } from './components/Footer';
 import { CookieConsent } from './components/CookieConsent';
 import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
@@ -75,6 +76,15 @@ export default function App() {
     };
   }, []);
 
+  // Pause background Lenis smooth-scroll when testimonials modal is active
+  useEffect(() => {
+    if (isTestimonialsOpen) {
+      lenisRef.current?.stop();
+    } else {
+      lenisRef.current?.start();
+    }
+  }, [isTestimonialsOpen]);
+
   const handleOpenTestimonials = () => {
     window.history.pushState({}, '', '/depoimentos');
     setIsTestimonialsOpen(true);
@@ -140,6 +150,7 @@ export default function App() {
         <Differentials />
         <FAQ />
         <BudgetForm />
+        <LocationAndStay />
       </main>
 
       <Footer 

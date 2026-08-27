@@ -4,7 +4,8 @@ import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
 import { pricingCatalog, bodyAreas, investmentBands } from '../lib/pricingCatalog';
 import { trackMetaLead } from '../lib/metaPixel';
-import { Loader2, UploadCloud, CheckCircle2, Image as ImageIcon } from 'lucide-react';
+import { Loader2, UploadCloud, CheckCircle2, Image as ImageIcon, FileText } from 'lucide-react';
+import { PricingTableModal } from './PricingTableModal';
 
 type FormValues = {
   nome: string;
@@ -42,6 +43,7 @@ export function BudgetForm() {
   const { register, handleSubmit, control, watch } = useForm<FormValues>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   
   // File states
   const [photoRegiao, setPhotoRegiao] = useState<File | null>(null);
@@ -474,17 +476,33 @@ ${data.infosExtras ? `- *Extras:* ${data.infosExtras}` : ''}`;
             </div>
 
             <div className="space-y-4 pt-4">
-              <label className="text-sm tracking-wide text-cream/70 uppercase block flex items-center justify-between">
-                <span>Faixa de Investimento Estimada *</span>
-              </label>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <label className="text-sm tracking-wide text-cream/70 uppercase block">
+                  Qual faixa de investimento imagina para esse projeto? *
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsPricingModalOpen(true)}
+                  className="self-start sm:self-auto inline-flex items-center gap-2 px-3.5 py-1.5 border border-gold/40 hover:border-gold bg-gold/10 hover:bg-gold text-gold hover:text-black rounded text-xs uppercase tracking-widest font-semibold transition-all duration-300 shadow-sm"
+                >
+                  <FileText size={14} />
+                  <span>Tabela de Valores</span>
+                </button>
+              </div>
+
               <Controller
                 control={control}
                 name="investimento"
                 rules={{ required: true }}
                 render={({ field }) => (
-                  <div className="flex flex-wrap gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {investmentBands.map(opt => (
-                      <SquareButton key={opt} label={opt} selected={field.value === opt} onClick={() => field.onChange(opt)} />
+                      <SquareButton 
+                        key={opt} 
+                        label={opt} 
+                        selected={field.value === opt} 
+                        onClick={() => field.onChange(opt)} 
+                      />
                     ))}
                   </div>
                 )}
@@ -558,13 +576,11 @@ ${data.infosExtras ? `- *Extras:* ${data.infosExtras}` : ''}`;
         </form>
       </div>
 
-      <div className="hidden md:block absolute -bottom-10 -right-20 md:-right-40 pointer-events-none opacity-20 mix-blend-screen select-none">
-        <img 
-          src="https://drive.google.com/thumbnail?sz=w1000&id=15U2mMMojOj9etBjc4lMgbvjr0Mvv21ab" 
-          alt="Texture" 
-          className="w-[450px] md:w-[900px] object-cover invert scale-110 md:scale-125 origin-bottom-right" 
-        />
-      </div>
+      {/* Pricing Table Details Modal */}
+      <PricingTableModal 
+        isOpen={isPricingModalOpen} 
+        onClose={() => setIsPricingModalOpen(false)} 
+      />
     </section>
   );
 }

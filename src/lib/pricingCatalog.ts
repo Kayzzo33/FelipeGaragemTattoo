@@ -1,15 +1,30 @@
 export const pricingCatalog = {
-  valorMinimo: 2500,
+  valorMinimo: 2800,
   ticketMedioRecente: 5500,
   condicoesPagamento: {
     aVista: '10% de desconto',
-    parcelado: 'Em até 10x no cartão',
+    parcelado: 'Em até 10x sem juros no cartão',
+  },
+  tabelaReferencia: [
+    { item: 'Valor mínimo', valor: 'R$ 2.800' },
+    { item: 'Ticket médio recente', valor: '~ R$ 5.500' },
+    { item: 'Antebraço interno (1 projeto)', valor: 'a partir de R$ 2.800' },
+    { item: 'Ombro ao punho externo (2 projetos)', valor: 'a partir de R$ 5.500' },
+  ],
+  tempoAtendimento: {
+    inicio: 'Todos os atendimentos iniciam às 10h da manhã',
+    disponibilidade: 'O artista tira o dia todo para o seu projeto, então venha com tempo totalmente disponível.',
+    umProjeto: 'O tempo médio de atendimento para 1 projeto (antebraço interno, antebraço externo, braço externo ou braço interno) é de 6 a 8 hs totais contando apresentação, pausas durante a tatuagem e pausa para o almoço.',
+    doisProjetos: 'O tempo médio de atendimento para 2 projetos (fechamento de braço externo ou fechamento interno) é de 10hs totais contando apresentação, pausas durante a tatuagem e pausa para o almoço.',
+    quatroProjetos: 'O tempo médio de atendimento para 4 projetos (fechamento completo de braço) serão dois dias de atendimento.',
+    parcelamento: 'Atenção: todos os trabalhos podem ser parcelados em até 10x sem juros.',
   },
   porRegiao: {
+    'Antebraço Interno': 2800,
     'Antebraço Externo': 3000,
     'Braço Externo': 3800,
-    'Fechamento de Braço Externo (ombro ao punho)': 5800,
-    'Fechamento Interno de Braço': 5800,
+    'Fechamento de Braço Externo (ombro ao punho)': 5500,
+    'Fechamento Interno de Braço': 5500,
     'Fechamento Total de Braço': 10800,
     'Canela': 3000,
     'Panturrilha': 3000,
@@ -21,25 +36,23 @@ export const pricingCatalog = {
     'Fechamento de 1/2 Costas - Central': 6000,
     'Fechamento de 1/2 Costas': 6800,
     'Fechamento de Costas Completo': 11800,
-    // ATENÇÃO: os itens abaixo não tinham valor confirmado no catálogo enviado.
-    // Marcar como "sob consulta" até o cliente confirmar:
-    'Antebraço Interno': null, // sob consulta
-    'Braço Interno': null, // sob consulta
-    'Fechamento Total de Perna': null, // sob consulta
-    'Costas Total': null, // sob consulta
-    'Costas Parcial': null, // sob consulta
-    'Peitoral Total': null, // sob consulta
-    'Meio Peitoral': null, // sob consulta
-    'Abdômen': null, // sob consulta
+    'Braço Interno': 3800,
+    'Fechamento Total de Perna': null,
+    'Costas Total': null,
+    'Costas Parcial': null,
+    'Peitoral Total': null,
+    'Meio Peitoral': null,
+    'Abdômen': null,
   } as Record<string, number | null>,
-  observacoes: 'Valores para execução em Atibaia-SP. Todos os trabalhos podem ser parcelados. Projetos autorais desenvolvidos com base na história/temática do cliente.',
+  observacoes: 'Valores para execução em Atibaia-SP. Todos os trabalhos podem ser parcelados em até 10x sem juros.',
 };
 
 export const investmentBands = [
-  'R$ 2.500 a R$ 4.000',
-  'R$ 4.000 a R$ 6.000',
-  'R$ 6.000 a R$ 8.000',
-  'Acima de R$ 8.000',
+  'R$ 2.800 a R$ 4.500',
+  'R$ 4.500 a R$ 6.500',
+  'R$ 6.500 a R$ 8.500',
+  'Acima de R$ 8.500',
+  'Prefiro entender melhor após a avaliação',
 ];
 
 export const bodyAreas = [

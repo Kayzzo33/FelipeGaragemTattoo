@@ -42,6 +42,7 @@ export function Footer({ onOpenPrivacyPolicy, onOpenTestimonials, onNavigateSect
             <button onClick={() => handleNavClick('about')} className="text-cream/70 hover:text-cream text-left transition-colors font-light text-lg">Sobre</button>
             <button onClick={() => handleNavClick('differentials')} className="text-cream/70 hover:text-cream text-left transition-colors font-light text-lg">Diferenciais</button>
             <button onClick={handleDepoimentosClick} className="text-cream/70 hover:text-gold text-left transition-colors font-light text-lg">Depoimentos</button>
+            <button onClick={() => handleNavClick('location')} className="text-cream/70 hover:text-cream text-left transition-colors font-light text-lg">Localização</button>
             <button onClick={() => handleNavClick('contact')} className="text-cream/70 hover:text-cream text-left transition-colors font-light text-lg">Contato</button>
             {onOpenPrivacyPolicy && (
               <button onClick={onOpenPrivacyPolicy} className="text-cream/50 hover:text-gold text-left transition-colors font-light text-sm pt-2">
