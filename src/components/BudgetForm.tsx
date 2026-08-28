@@ -175,11 +175,11 @@ ${data.infosExtras ? `- *Extras:* ${data.infosExtras}` : ''}`;
 
       const whatsappUrl = `https://wa.me/5511989719861?text=${encodeURIComponent(formattedWhatsappMsg)}`;
 
-      // Non-blocking redirect to WhatsApp
+      // Try window.location.href or window.open, but guarantee smooth navigation
       try {
-        window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+        window.location.href = whatsappUrl;
       } catch (e) {
-        console.warn('Popup blocked, will provide direct button on success screen.');
+        console.warn('Navigation blocked, showing direct button on success screen:', e);
       }
 
       setIsSuccess(true);
@@ -189,7 +189,12 @@ ${data.infosExtras ? `- *Extras:* ${data.infosExtras}` : ''}`;
       const fallbackMsg = `Olá Felipe! Tentei enviar meu orçamento pelo site:
 - *Nome:* ${data.nome}
 - *Ideia:* ${data.ideia}`;
-      window.open(`https://wa.me/5511989719861?text=${encodeURIComponent(fallbackMsg)}`, '_blank', 'noopener,noreferrer');
+      const fallbackUrl = `https://wa.me/5511989719861?text=${encodeURIComponent(fallbackMsg)}`;
+      try {
+        window.location.href = fallbackUrl;
+      } catch {
+        // Fallback
+      }
       setIsSuccess(true);
     } finally {
       setIsSubmitting(false);
@@ -197,13 +202,24 @@ ${data.infosExtras ? `- *Extras:* ${data.infosExtras}` : ''}`;
   };
 
   if (isSuccess) {
+    const formattedWhatsappMsg = `Olá Felipe! Acabei de enviar minha solicitação de orçamento pelo site:
+- *Nome:* ${watch('nome') || ''}
+- *WhatsApp:* ${watch('whatsapp') || ''}
+- *Ideia:* ${watch('ideia') || ''}`;
+    const directWhatsappUrl = `https://wa.me/5511989719861?text=${encodeURIComponent(formattedWhatsappMsg)}`;
+
     return (
       <section id="contact" className="py-32 bg-black px-6 md:px-12">
         <div className="max-w-2xl mx-auto text-center border border-gold/20 p-12 md:p-24 rounded-sm">
-          <h2 className="text-3xl md:text-5xl font-serif text-cream mb-6">Projeto Enviado</h2>
-          <p className="text-cream/70 text-lg mb-12">Recebi sua ideia! Em até dois dias úteis, retornarei com uma proposta. Se preferir, me chame no WhatsApp.</p>
-          <a href="https://wa.me/5511989719861" target="_blank" rel="noreferrer" className="inline-block text-black bg-gold px-8 py-4 rounded-full uppercase tracking-widest text-sm font-medium hover:bg-cream transition-colors">
-            Falar no WhatsApp
+          <h2 className="text-3xl md:text-5xl font-serif text-cream mb-6">Projeto Enviado!</h2>
+          <p className="text-cream/70 text-lg mb-8">Recebi seus dados! Caso o WhatsApp não tenha aberto automaticamente, clique no botão abaixo para conversar comigo agora:</p>
+          <a 
+            href={directWhatsappUrl} 
+            target="_top" 
+            rel="noopener noreferrer" 
+            className="inline-block text-black bg-gold px-8 py-4 rounded-full uppercase tracking-widest text-sm font-medium hover:bg-cream transition-colors shadow-lg hover:scale-105 transform duration-200"
+          >
+            Abrir Conversa no WhatsApp
           </a>
         </div>
       </section>
