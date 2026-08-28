@@ -216,7 +216,7 @@ ${data.infosExtras ? `- *Extras:* ${data.infosExtras}` : ''}`;
     if (price === undefined) return null;
     
     return (
-      <span className="inline-block ml-4 text-gold/80 text-xs tracking-wider border border-gold/30 px-3 py-1 rounded-full whitespace-nowrap">
+      <span className="inline-block text-gold/90 text-xs tracking-wider border border-gold/40 bg-gold/5 px-3 py-1 rounded-full whitespace-nowrap">
         {price === null ? 'Sob consulta após avaliação' : `A partir de R$ ${price.toLocaleString('pt-BR')}`}
       </span>
     );
@@ -296,8 +296,8 @@ ${data.infosExtras ? `- *Extras:* ${data.infosExtras}` : ''}`;
             </div>
 
             <div className="space-y-4">
-              <label className="text-sm tracking-wide text-cream/70 uppercase block flex items-center">
-                Local da Tatuagem *
+              <label className="text-sm tracking-wide text-cream/70 uppercase flex flex-wrap items-center gap-3">
+                <span>Local da Tatuagem *</span>
                 {renderPriceBadge(selectedLocal)}
               </label>
               <Controller
