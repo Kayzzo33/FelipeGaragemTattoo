@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useScroll, useTransform, motion } from 'framer-motion';
-import { ArrowLeft, Play } from 'lucide-react';
+import { ArrowLeft, Play, Volume2, VolumeX } from 'lucide-react';
 
 // Vídeos locais em alta resolução com capas de pré-visualização:
 const VIDEOS = {
@@ -40,34 +40,19 @@ function DriveVideoPlayer({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showDrivePlayBtn, setShowDrivePlayBtn] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
 
-  // Executa play/pause quando a seção se torna ativa no scroll
+  // Pausa o vídeo caso o usuário role para fora da seção ativa
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    if (isActive) {
-      // Inicia mutado para garantir que o navegador não bloqueie o autoplay
-      video.muted = true;
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setIsPlaying(true);
-            setShowDrivePlayBtn(false);
-          })
-          .catch((err) => {
-            console.warn('Autoplay bloqueado pelo navegador, aguardando clique do usuário:', err);
-            setIsPlaying(false);
-            setShowDrivePlayBtn(true);
-          });
-      }
-    } else {
+    if (!isActive && isPlaying) {
       video.pause();
       setIsPlaying(false);
       setShowDrivePlayBtn(true);
     }
-  }, [isActive]);
+  }, [isActive, isPlaying]);
 
   const handlePlayClick = (e?: React.MouseEvent) => {
     if (e) {
@@ -76,29 +61,47 @@ function DriveVideoPlayer({
     const video = videoRef.current;
     if (!video) return;
 
-    // Se estiver em miniatura, avança a animação para tela cheia
+    // Se estiver em miniatura no scroll da Hero, avança para tela cheia
     if (onZoomAndPlay) {
       onZoomAndPlay();
     }
 
-    // Clique direto do usuário desbloqueia áudio
-    video.muted = false;
-    const promise = video.play();
-    if (promise !== undefined) {
-      promise
-        .then(() => {
-          setIsPlaying(true);
-          setShowDrivePlayBtn(false);
-        })
-        .catch((err) => {
-          console.warn('Erro ao reproduzir com som, tentando muted:', err);
-          video.muted = true;
-          video.play().then(() => {
+    if (video.paused) {
+      // Clique explícito do usuário -> áudio liberado sem bloqueio do navegador
+      video.muted = false;
+      setIsMuted(false);
+      const promise = video.play();
+      if (promise !== undefined) {
+        promise
+          .then(() => {
             setIsPlaying(true);
             setShowDrivePlayBtn(false);
+          })
+          .catch((err) => {
+            console.warn('Tentando reproduzir com áudio:', err);
+            video.muted = true;
+            setIsMuted(true);
+            video.play().then(() => {
+              setIsPlaying(true);
+              setShowDrivePlayBtn(false);
+            });
           });
-        });
+      }
+    } else {
+      video.pause();
+      setIsPlaying(false);
+      setShowDrivePlayBtn(true);
     }
+  };
+
+  const toggleSound = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const video = videoRef.current;
+    if (!video) return;
+
+    const nextMuted = !isMuted;
+    video.muted = nextMuted;
+    setIsMuted(nextMuted);
   };
 
   return (
@@ -113,13 +116,12 @@ function DriveVideoPlayer({
       {/* Elemento de Vídeo HTML5 com controles nativos ao reproduzir */}
       <video
         ref={videoRef}
-        src={streamUrl}
         poster={posterUrl}
         playsInline
         controls={isPlaying}
-        preload="metadata"
+        preload="auto"
         loop
-        muted={!isPlaying}
+        muted={isMuted}
         onPlay={() => {
           setIsPlaying(true);
           setShowDrivePlayBtn(false);
@@ -128,8 +130,40 @@ function DriveVideoPlayer({
           setIsPlaying(false);
           setShowDrivePlayBtn(true);
         }}
+        onVolumeChange={() => {
+          if (videoRef.current) {
+            setIsMuted(videoRef.current.muted || videoRef.current.volume === 0);
+          }
+        }}
         className="w-full h-full object-contain bg-black relative z-10"
-      />
+      >
+        <source src={streamUrl} type="video/mp4" />
+      </video>
+
+      {/* Botão flutuante de Som (aparece quando o vídeo está tocando mutado via autoplay) */}
+      {isPlaying && isMuted && (
+        <button
+          type="button"
+          onClick={toggleSound}
+          className="absolute top-4 right-4 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/80 hover:bg-black/95 text-gold border border-gold/40 backdrop-blur-md shadow-lg text-xs font-semibold uppercase tracking-wider transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+          title="Clique para ativar o som"
+        >
+          <VolumeX size={16} className="text-red-400 animate-pulse" />
+          <span>Ativar Som</span>
+        </button>
+      )}
+
+      {isPlaying && !isMuted && (
+        <button
+          type="button"
+          onClick={toggleSound}
+          className="absolute top-4 right-4 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white/80 hover:text-white border border-white/20 backdrop-blur-md text-xs font-semibold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+          title="Mutar vídeo"
+        >
+          <Volume2 size={16} className="text-gold" />
+          <span>Mutar</span>
+        </button>
+      )}
 
       {/* Botão de Play Estilo Google Drive (Central, translúcido e elegante) */}
       {showDrivePlayBtn && (
