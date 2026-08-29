@@ -1,3 +1,5 @@
+import { trackMetaContact } from '../lib/metaPixel';
+
 interface FooterProps {
   onOpenPrivacyPolicy?: () => void;
   onOpenTestimonials?: () => void;
@@ -55,7 +57,15 @@ export function Footer({ onOpenPrivacyPolicy, onOpenTestimonials, onNavigateSect
             <span className="text-gold text-xs tracking-[0.2em] uppercase font-medium mb-2">Social</span>
             <a href="https://instagram.com/felipe.garagemtattoo" target="_blank" rel="noreferrer" className="text-cream/70 hover:text-cream transition-colors font-light text-lg">@felipe.garagemtattoo</a>
             <a href="https://tiktok.com/@felipe.garagemtattoo" target="_blank" rel="noreferrer" className="text-cream/70 hover:text-cream transition-colors font-light text-lg">@felipe.garagemtattoo</a>
-            <a href="https://wa.me/5511989719861" target="_blank" rel="noreferrer" className="text-cream/70 hover:text-cream transition-colors font-light text-lg">11989719861</a>
+            <a 
+              href="https://wa.me/5511989719861" 
+              target="_blank" 
+              rel="noreferrer" 
+              onClick={() => trackMetaContact('WhatsApp - Footer')}
+              className="text-cream/70 hover:text-cream transition-colors font-light text-lg"
+            >
+              11989719861
+            </a>
           </div>
         </div>
 

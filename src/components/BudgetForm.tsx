@@ -3,7 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
 import { pricingCatalog, bodyAreas, investmentBands } from '../lib/pricingCatalog';
-import { trackMetaLead } from '../lib/metaPixel';
+import { trackMetaLead, trackMetaContact, trackMetaInitiateForm, trackUserAction } from '../lib/metaPixel';
 import { Loader2, UploadCloud, CheckCircle2, Image as ImageIcon, FileText } from 'lucide-react';
 import { PricingTableModal } from './PricingTableModal';
 
@@ -135,15 +135,46 @@ export function BudgetForm() {
         imagens: imageUrls,
       };
 
-      // 1. Save to Supabase DB if table exists (graceful ignore if not)
+      // 1. Trigger Meta Pixel Lead conversion event
+      trackMetaLead({
+        content_name: `Orçamento Tattoo - ${data.local || 'Geral'}`,
+        value: data.investimento || 'Sob Consulta',
+        customer_name: data.nome,
+        preferred_time: data.quando,
+      });
+
+      // 2. Save to Supabase DB if table exists (graceful ignore if not)
       try {
-        await supabase
+        const dbPayload = {
+          nome: data.nome,
+          instagram: data.instagram || '',
+          whatsapp: data.whatsapp,
+          ideia: data.ideia,
+          tamanho: data.tamanho,
+          infos_extras: data.infosExtras || '',
+          local: data.local,
+          lado: data.lado || '',
+          condicao_pele: data.condicaoPele,
+          quando: data.quando,
+          investimento: data.investimento,
+          amenizador: data.amenizador,
+          como_conheceu: data.comoConheceu,
+          imagens: imageUrls,
+        };
+
+        const { error: dbInsertError } = await supabase
           .from('orcamentos')
-          .insert([{
-            ...data,
-            imagens: imageUrls,
-            created_at: new Date().toISOString()
-          }]);
+          .insert([dbPayload]);
+
+        if (dbInsertError) {
+          // Retry with camelCase in case columns were created as camelCase
+          await supabase
+            .from('orcamentos')
+            .insert([{
+              ...data,
+              imagens: imageUrls,
+            }]);
+        }
       } catch (dbErr) {
         console.warn('Supabase DB insert skipped/failed (non-blocking):', dbErr);
       }
@@ -175,8 +206,8 @@ export function BudgetForm() {
         }
       }
 
-      // Build WhatsApp message
-      const formattedWhatsappMsg = `Olá Felipe! Acabei de enviar minha solicitação de orçamento pelo site:
+      // Build WhatsApp message with image reference links if available
+      let formattedWhatsappMsg = `Olá Felipe! Acabei de enviar minha solicitação de orçamento pelo site:
 - *Nome:* ${data.nome}
 - *Instagram:* ${data.instagram ? `@${data.instagram.replace(/^@/, '')}` : 'Não informado'}
 - *WhatsApp:* ${data.whatsapp}
@@ -187,11 +218,15 @@ export function BudgetForm() {
 - *Previsão:* ${data.quando}
 - *Investimento:* ${data.investimento}
 - *Amenizador 3D:* ${data.amenizador}
-${data.infosExtras ? `- *Extras:* ${data.infosExtras}` : ''}`;
+${data.infosExtras ? `- *Extras:* ${data.infosExtras}\n` : ''}`;
+
+      if (imageUrls.length > 0) {
+        formattedWhatsappMsg += `\n*Imagens de Referência:*\n${imageUrls.map((url, idx) => `• Foto ${idx + 1}: ${url}`).join('\n')}`;
+      }
 
       const whatsappUrl = `https://wa.me/5511989719861?text=${encodeURIComponent(formattedWhatsappMsg)}`;
 
-      // Try window.location.href or window.open, but guarantee smooth navigation
+      // Redireciona para o WhatsApp
       try {
         window.location.href = whatsappUrl;
       } catch (e) {
@@ -233,6 +268,7 @@ ${data.infosExtras ? `- *Extras:* ${data.infosExtras}` : ''}`;
             href={directWhatsappUrl} 
             target="_top" 
             rel="noopener noreferrer" 
+            onClick={() => trackMetaContact('WhatsApp - Success Screen')}
             className="inline-block text-black bg-gold px-8 py-4 rounded-full uppercase tracking-widest text-sm font-medium hover:bg-cream transition-colors shadow-lg hover:scale-105 transform duration-200"
           >
             Abrir Conversa no WhatsApp
@@ -289,6 +325,7 @@ ${data.infosExtras ? `- *Extras:* ${data.infosExtras}` : ''}`;
               <label className="text-sm tracking-wide text-cream/70 uppercase">Nome Completo *</label>
               <input 
                 {...register('nome', { required: true })}
+                onFocus={() => trackMetaInitiateForm('Nome')}
                 className="w-full bg-transparent border-b border-cream/30 py-3 text-cream focus:outline-none focus:border-gold transition-colors text-lg"
                 placeholder="Seu nome"
               />
@@ -514,7 +551,10 @@ ${data.infosExtras ? `- *Extras:* ${data.infosExtras}` : ''}`;
                 </label>
                 <button
                   type="button"
-                  onClick={() => setIsPricingModalOpen(true)}
+                  onClick={() => {
+                    trackUserAction('Click_Ver_Tabela_Valores');
+                    setIsPricingModalOpen(true);
+                  }}
                   className="self-start sm:self-auto inline-flex items-center gap-2 px-3.5 py-1.5 border border-gold/40 hover:border-gold bg-gold/10 hover:bg-gold text-gold hover:text-black rounded text-xs uppercase tracking-widest font-semibold transition-all duration-300 shadow-sm"
                 >
                   <FileText size={14} />
@@ -602,7 +642,10 @@ ${data.infosExtras ? `- *Extras:* ${data.infosExtras}` : ''}`;
                 <>ENVIAR PROJETO →</>
               )}
             </button>
-            <span className="text-cream/50 text-sm mt-6 block font-light">Retorno em até dois dias úteis.</span>
+            <p className="text-cream/50 text-xs mt-6 max-w-md font-light leading-relaxed">
+              Ao enviar, você concorda com o tratamento dos seus dados para fins exclusivos de elaboração deste orçamento, em total conformidade com a LGPD e nossos termos de privacidade.
+            </p>
+            <span className="text-gold/80 text-xs mt-2 block font-mono tracking-widest uppercase">Retorno em até dois dias úteis</span>
           </div>
           
         </form>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { BlurRevealText } from './BlurRevealText';
+import { trackUserAction } from '../lib/metaPixel';
 
 export function LocationAndStay() {
   return (
@@ -47,6 +48,7 @@ export function LocationAndStay() {
               href="https://www.google.com/maps/search/?api=1&query=Atibaia+SP"
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackUserAction('Click_Open_Google_Maps')}
               className="text-xs uppercase tracking-widest text-gold hover:text-white transition-colors underline underline-offset-4 font-medium"
             >
               Abrir no Maps →

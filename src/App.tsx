@@ -12,6 +12,7 @@ import { BudgetForm } from './components/BudgetForm';
 import { LocationAndStay } from './components/LocationAndStay';
 import { Footer } from './components/Footer';
 import { CookieConsent } from './components/CookieConsent';
+import { trackSectionView, trackUserAction } from './lib/metaPixel';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -86,12 +87,48 @@ export default function App() {
   useEffect(() => {
     if (isTestimonialsOpen) {
       lenisRef.current?.stop();
+      trackSectionView('Depoimentos_Fullscreen');
     } else {
       lenisRef.current?.start();
     }
   }, [isTestimonialsOpen]);
 
+  // Track section views as user scrolls down the landing page
+  useEffect(() => {
+    const sections = [
+      { id: 'about', name: 'Sobre_Artista' },
+      { id: 'portfolio', name: 'Portfolio_Galeria' },
+      { id: 'experience', name: 'Experiencia_Autoral' },
+      { id: 'differentials', name: 'Diferenciais_Exclusivos' },
+      { id: 'faq', name: 'Perguntas_Frequentes' },
+      { id: 'budget', name: 'Formulario_Orcamento' },
+      { id: 'location', name: 'Localizacao_Estudio' },
+    ];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const found = sections.find((s) => s.id === entry.target.id);
+            if (found) {
+              trackSectionView(found.name);
+            }
+          }
+        });
+      },
+      { threshold: 0.35 }
+    );
+
+    sections.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   const handleOpenTestimonials = () => {
+    trackUserAction('Click_Depoimentos_Header');
     window.history.pushState({}, '', '/depoimentos');
     setIsTestimonialsOpen(true);
   };
@@ -105,6 +142,7 @@ export default function App() {
   };
 
   const handleOpenBudgetFromTestimonials = () => {
+    trackUserAction('Click_CTA_Depoimentos_Para_Orcamento');
     handleCloseTestimonials();
     setTimeout(() => {
       handleNavigateSection('budget');
@@ -114,6 +152,7 @@ export default function App() {
   const handleNavigateSection = (sectionId?: string) => {
     const targetId = sectionId === 'contact' ? 'budget' : sectionId;
     if (targetId) {
+      trackUserAction(`Nav_Click_${targetId}`);
       const el = document.getElementById(targetId);
       if (el) {
         if (lenisRef.current) {

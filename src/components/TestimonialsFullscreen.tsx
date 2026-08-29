@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useScroll, useTransform, motion } from 'framer-motion';
 import { ArrowLeft, Play, Volume2, VolumeX } from 'lucide-react';
+import { trackVideoPlay } from '../lib/metaPixel';
 
 // Vídeos locais em alta resolução com capas de pré-visualização:
 const VIDEOS = {
@@ -70,6 +71,7 @@ function DriveVideoPlayer({
       // Clique explícito do usuário -> áudio liberado sem bloqueio do navegador
       video.muted = false;
       setIsMuted(false);
+      trackVideoPlay(title || 'Video_Depoimento');
       const promise = video.play();
       if (promise !== undefined) {
         promise

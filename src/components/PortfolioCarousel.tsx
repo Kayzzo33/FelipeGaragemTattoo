@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ZoomParallaxPortfolio } from './ZoomParallaxPortfolio';
+import { trackUserAction } from '../lib/metaPixel';
 
 export function PortfolioCarousel() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -45,7 +46,10 @@ export function PortfolioCarousel() {
             Confira alguns trabalhos <span className="text-gold">↓</span>
           </h3>
           <button 
-            onClick={() => setIsExpanded(true)} 
+            onClick={() => {
+              trackUserAction('Click_Ver_Mais_Portfolio');
+              setIsExpanded(true);
+            }} 
             className="hidden md:inline-block text-gold hover:text-cream transition-colors text-lg font-sans font-light border-b border-gold hover:border-cream pb-1 cursor-pointer"
           >
             Ver mais →
@@ -94,7 +98,10 @@ export function PortfolioCarousel() {
 
         <div className="px-6 mt-12 md:hidden flex justify-end">
           <button 
-            onClick={() => setIsExpanded(true)} 
+            onClick={() => {
+              trackUserAction('Click_Ver_Mais_Portfolio_Mobile');
+              setIsExpanded(true);
+            }} 
             className="text-gold hover:text-cream transition-colors text-lg font-sans font-light border-b border-gold hover:border-cream pb-1 cursor-pointer"
           >
             Ver mais →

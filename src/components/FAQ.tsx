@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { cn } from '../lib/utils';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { trackUserAction } from '../lib/metaPixel';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -46,7 +47,12 @@ export function FAQ() {
         {faqs.map((faq, i) => (
           <div key={i} className="faq-item border-b border-cream/20">
             <button 
-              onClick={() => setOpenIndex(openIndex === i ? null : i)}
+              onClick={() => {
+                if (openIndex !== i) {
+                  trackUserAction('Click_FAQ_Expand', faq.q);
+                }
+                setOpenIndex(openIndex === i ? null : i);
+              }}
               className="w-full py-8 flex items-center justify-between text-left group"
             >
               <span className="text-xl md:text-2xl font-serif text-cream group-hover:text-gold transition-colors">{faq.q}</span>
