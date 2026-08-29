@@ -129,13 +129,13 @@ export function BudgetForm() {
         }
       }
 
+      // Payload for Email and Database (only sending image URLs or direct text, no heavy base64)
       const payload = {
         ...data,
         imagens: imageUrls,
-        attachments: fallbackAttachments,
       };
 
-      // Optional: attempt save to Supabase DB if table exists (graceful ignore if not)
+      // 1. Save to Supabase DB if table exists (graceful ignore if not)
       try {
         await supabase
           .from('orcamentos')
@@ -148,15 +148,31 @@ export function BudgetForm() {
         console.warn('Supabase DB insert skipped/failed (non-blocking):', dbErr);
       }
 
-      // Send Email via Express backend (Resend API)
+      // 2. Dispatch Email via Supabase Edge Function (send-budget / resend)
       try {
-        await fetch('/api/send-budget', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+        const { error: fnError } = await supabase.functions.invoke('send-budget', {
+          body: payload,
         });
+        if (fnError) {
+          console.warn('Supabase function send-budget returned error, trying fallback api:', fnError);
+          // Fallback to local server endpoint if available
+          await fetch('/api/send-budget', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+        }
       } catch (emailErr) {
-        console.error('Email API call caught error (non-blocking for user):', emailErr);
+        console.warn('Supabase function call caught error, trying fallback:', emailErr);
+        try {
+          await fetch('/api/send-budget', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+        } catch (localErr) {
+          console.error('Email API call caught error (non-blocking for user):', localErr);
+        }
       }
 
       // Build WhatsApp message
